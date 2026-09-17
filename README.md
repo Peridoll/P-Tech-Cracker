@@ -24,9 +24,16 @@ GTA FiveMの犯罪ギミックを練習するための、スマートフォン�
 
 - 対象: オイルリグ強盗
 - 7列 × 7行、数字は1〜3
-- 数字ぶん上下左右へジャンプ
+- 数字ぶん右または下へジャンプ
 - 5秒の記憶フェーズと30秒の追跡フェーズ
 - ミス3回以内に右下へ到達すると成功
+
+### P-Tech: CardMemory
+
+- 対象: オイルリグ強盗
+- 5枚の本物の番号と位置を記憶
+- 偽番号を無視して色・図形に関する3問へ回答
+- 5秒の記憶フェーズと15秒の回答フェーズ
 
 ## Structure
 
@@ -36,6 +43,7 @@ games/
   code-cracker/             CodeCracker本体と仕様
   chain-braker/             ChainBraker本体と仕様
   jumping-maze/             JumpingMaze本体と仕様
+  card-memory/              CardMemory本体と仕様
 ```
 
 外部ライブラリとビルド作業は不要です。

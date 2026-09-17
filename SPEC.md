@@ -21,6 +21,7 @@ GTA FiveMの犯罪ギミックを、スマートフォンやPCのブラウザで
 | CodeCracker | ATM強盗 | プレイ可能 |
 | ChainBraker | オイルリグ強盗 | プレイ可能 |
 | JumpingMaze | オイルリグ強盗 | プレイ可能 |
+| CardMemory | オイルリグ強盗 | プレイ可能 |
 
 個別仕様は各ゲームフォルダ内の `SPEC.md` を参照する。
 

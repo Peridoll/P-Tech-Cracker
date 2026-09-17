@@ -29,6 +29,16 @@
       "status": "PLAYABLE",
       "color": "#a982ff",
       "enabled": true
+    },
+    {
+      "id": "card-memory",
+      "title": "CARD MEMORY",
+      "label": "OIL RIG",
+      "description": "本物の番号とカードの色・図形を結びつける記憶ギミック",
+      "href": "games/card-memory/?v=20260917-1",
+      "status": "PLAYABLE",
+      "color": "#52e5d4",
+      "enabled": true
     }
   ]
 }

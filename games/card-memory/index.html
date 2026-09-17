@@ -1,0 +1,789 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#081217" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>P-Tech: CardMemory</title>
+  <style>
+    :root {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color-scheme: dark;
+      --viewport-height: 100dvh;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      overscroll-behavior: none;
+      background: #05090c;
+    }
+    body {
+      position: fixed;
+      inset: 0;
+      height: var(--viewport-height);
+      display: grid;
+      place-items: center;
+      padding: clamp(0px, 1.5dvh, 12px);
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    button { font: inherit; touch-action: manipulation; }
+
+    #app {
+      --bg: #081217;
+      --panel: #0d1b21;
+      --panel-2: #12262c;
+      --text: #effdfc;
+      --muted: #8ca4a7;
+      --border: #254148;
+      --primary: #52e5d4;
+      --danger: #ef3f5c;
+      width: min(100%, 820px);
+      height: min(860px, 100%);
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: clamp(0px, 3vw, 24px);
+      background: var(--bg);
+      color: var(--text);
+      box-shadow: 0 22px 80px rgba(0, 0, 0, .48);
+    }
+    #app[data-theme="white"] {
+      --bg: #f2f8f8;
+      --panel: #fff;
+      --panel-2: #dcebea;
+      --text: #102326;
+      --muted: #60787b;
+      --border: #bed4d2;
+      color-scheme: light;
+    }
+
+    .screen {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      padding:
+        max(clamp(9px, 2dvh, 17px), env(safe-area-inset-top))
+        max(clamp(8px, 2vw, 17px), env(safe-area-inset-right))
+        max(clamp(9px, 2dvh, 17px), env(safe-area-inset-bottom))
+        max(clamp(8px, 2vw, 17px), env(safe-area-inset-left));
+    }
+    .hidden { display: none !important; }
+
+    .title-screen, .result-screen {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: clamp(15px, 3.5dvh, 30px);
+    }
+    .eyebrow {
+      margin: 0;
+      color: var(--primary);
+      font-size: clamp(.68rem, 2.4vw, .8rem);
+      font-weight: 950;
+      letter-spacing: .3em;
+    }
+    .brand {
+      margin: 0;
+      font-size: clamp(2rem, 9vw, 4rem);
+      line-height: .92;
+      font-weight: 1000;
+      letter-spacing: .03em;
+    }
+    .brand span { display: block; color: var(--primary); }
+    .lead {
+      max-width: 36rem;
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(.8rem, 3vw, 1rem);
+      line-height: 1.8;
+    }
+    .theme-btn, .hub-link {
+      position: absolute;
+      top: max(4px, env(safe-area-inset-top));
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 13px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--text);
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: .09em;
+    }
+    .theme-btn { right: max(4px, env(safe-area-inset-right)); cursor: pointer; }
+    .hub-link { left: max(4px, env(safe-area-inset-left)); text-decoration: none; }
+    .primary-btn, .secondary-btn, .exit-btn {
+      border: 0;
+      cursor: pointer;
+      font-weight: 950;
+    }
+    .primary-btn {
+      min-width: 170px;
+      min-height: 54px;
+      padding: 0 34px;
+      border-radius: 14px;
+      background: var(--primary);
+      color: #06211f;
+      letter-spacing: .14em;
+      box-shadow: 0 10px 30px rgba(82, 229, 212, .2);
+    }
+    .secondary-btn {
+      min-height: 48px;
+      padding: 0 28px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--panel);
+      color: var(--text);
+      letter-spacing: .08em;
+    }
+    button:active { transform: translateY(1px) scale(.99); }
+
+    .game-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(5px, 1.1dvh, 10px);
+    }
+    .hud {
+      width: 100%;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 9px;
+    }
+    .exit-btn {
+      min-height: 36px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--panel);
+      color: var(--text);
+      font-size: .72rem;
+      letter-spacing: .08em;
+    }
+    .game-title {
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      color: var(--primary);
+      font-size: clamp(.82rem, 3vw, 1rem);
+      font-weight: 1000;
+      letter-spacing: .1em;
+    }
+    .progress-text {
+      min-width: 92px;
+      text-align: right;
+      font-size: clamp(.65rem, 2.5vw, .78rem);
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+    .timer-track {
+      width: 100%;
+      height: clamp(6px, 1dvh, 9px);
+      overflow: hidden;
+      border-radius: 999px;
+      background: var(--panel-2);
+    }
+    .timer-fill {
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--primary);
+      transform-origin: left center;
+      transition: transform .08s linear, background .2s ease;
+    }
+    .timer-fill.danger { background: var(--danger); }
+    .phase-row {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .phase {
+      color: var(--muted);
+      font-size: clamp(.68rem, 2.5vw, .82rem);
+      font-weight: 900;
+    }
+    .time {
+      min-width: 52px;
+      text-align: right;
+      font-size: clamp(1rem, 3.8vw, 1.22rem);
+      font-weight: 1000;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .cards {
+      width: min(100%, 750px);
+      height: clamp(170px, 34dvh, 282px);
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: clamp(4px, 1.2vw, 10px);
+    }
+    .card {
+      min-width: 0;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, .2);
+      border-radius: clamp(7px, 1.6vw, 13px);
+      background: var(--card-bg);
+      box-shadow: 0 5px 14px rgba(0, 0, 0, .2);
+    }
+    .memory-number {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: var(--memory-color, #fff);
+      font-size: clamp(2.6rem, 12vw, 6.4rem);
+      font-weight: 1000;
+      text-shadow: 0 3px 5px rgba(0, 0, 0, .35);
+    }
+    .card-detail {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-rows: 17% 50% 14% 19%;
+      align-items: center;
+      justify-items: center;
+      padding: clamp(5px, 1vw, 9px);
+      gap: 3px;
+    }
+    .attribute-band {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      border-radius: 3px;
+      background: var(--band-bg);
+      color: var(--band-color);
+      font-size: clamp(.52rem, 2vw, .78rem);
+      font-weight: 1000;
+      line-height: 1;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, .22);
+    }
+    .shape-stage {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+    }
+    .shape {
+      display: grid;
+      place-items: center;
+      background: var(--shape-color);
+    }
+    .shape.square { width: 72%; aspect-ratio: 1; }
+    .shape.rectangle { width: 88%; height: 58%; }
+    .shape.circle { width: 78%; aspect-ratio: 1; border-radius: 50%; }
+    .shape.triangle { width: 90%; height: 88%; clip-path: polygon(50% 0, 100% 100%, 0 100%); padding-top: 24%; }
+    .inner-shape.square { width: 38%; aspect-ratio: 1; }
+    .inner-shape.rectangle { width: 52%; height: 30%; }
+    .inner-shape.circle { width: 40%; aspect-ratio: 1; border-radius: 50%; }
+    .inner-shape.triangle { width: 46%; height: 42%; padding-top: 0; clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+    .fake-number {
+      align-self: end;
+      color: var(--number-color);
+      font-size: clamp(1.05rem, 4.7vw, 1.75rem);
+      font-weight: 1000;
+      line-height: 1;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, .3);
+    }
+
+    .questions {
+      width: min(100%, 750px);
+      min-height: 0;
+      flex: 1 1 auto;
+      display: grid;
+      grid-template-rows: repeat(3, minmax(0, 1fr));
+      gap: clamp(4px, .8dvh, 7px);
+    }
+    .question {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 4px;
+    }
+    .question-text {
+      margin: 0;
+      color: var(--primary);
+      font-size: clamp(.64rem, 2.5vw, .82rem);
+      font-weight: 900;
+      line-height: 1.2;
+    }
+    .choices {
+      min-height: 30px;
+      display: grid;
+      gap: clamp(4px, 1vw, 8px);
+    }
+    .choices.color-choices { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+    .choices.shape-choices { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .choice {
+      min-width: 0;
+      min-height: 30px;
+      padding: 0;
+      border: 2px solid transparent;
+      border-radius: 6px;
+      background: var(--choice-color, var(--panel-2));
+      color: var(--text);
+      cursor: pointer;
+      font-size: clamp(.58rem, 2.2vw, .75rem);
+      font-weight: 900;
+    }
+    .choice[data-value="white"], .choice[data-value="yellow"] { border-color: #91a0a4; }
+    .choice.selected {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 32%, transparent);
+      transform: translateY(-1px);
+    }
+    .choice.correct { border-color: #4eff98; box-shadow: 0 0 0 2px rgba(78,255,152,.28); }
+    .choice.wrong { border-color: var(--danger); box-shadow: 0 0 0 2px rgba(239,63,92,.3); }
+    .memory-hint {
+      min-height: 18px;
+      margin: 0;
+      color: var(--muted);
+      text-align: center;
+      font-size: clamp(.68rem, 2.5vw, .82rem);
+      font-weight: 800;
+    }
+
+    .result-mark {
+      width: clamp(74px, 19vw, 106px);
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border: 3px solid currentColor;
+      border-radius: 50%;
+      color: var(--primary);
+      font-size: clamp(2rem, 9vw, 3.6rem);
+      font-weight: 1000;
+    }
+    .result-screen[data-result="fail"] .result-mark { color: var(--danger); }
+    .result-title {
+      margin: 0;
+      font-size: clamp(2rem, 9vw, 4rem);
+      line-height: 1;
+      font-weight: 1000;
+      letter-spacing: .04em;
+    }
+    .result-detail { margin: 0; color: var(--muted); font-weight: 800; }
+    .result-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+    @media (max-height: 650px) {
+      .screen { padding-top: 6px; padding-bottom: 6px; }
+      .game-screen { gap: 4px; }
+      .cards { height: clamp(142px, 31dvh, 200px); }
+      .exit-btn { min-height: 32px; }
+      .choice { min-height: 26px; }
+      .memory-hint { min-height: 15px; }
+    }
+    @media (max-width: 420px) {
+      .cards { gap: 4px; }
+      .card { border-width: 1px; }
+      .card-detail { padding: 4px; gap: 2px; }
+      .choices { gap: 3px; }
+      .choice { border-width: 1px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main id="app" data-theme="black">
+    <section id="titleScreen" class="screen title-screen">
+      <a class="hub-link" href="../../" aria-label="ゲーム選択へ戻る">← P-TECH</a>
+      <button id="themeButton" class="theme-btn" type="button" aria-label="テーマを切り替える">WHITE</button>
+      <p class="eyebrow">P-TECH</p>
+      <h1 class="brand">CARD<span>MEMORY</span></h1>
+      <p class="lead">本物の番号とカードの位置を記憶。<br />偽番号に惑わされず、色と図形を答えよう。</p>
+      <button id="startButton" class="primary-btn" type="button">START</button>
+    </section>
+
+    <section id="gameScreen" class="screen game-screen hidden" aria-label="ゲーム画面">
+      <header class="hud">
+        <button id="exitButton" class="exit-btn" type="button">EXIT</button>
+        <div class="game-title">CARD MEMORY</div>
+        <div id="progressText" class="progress-text">MEMORY</div>
+      </header>
+      <div class="timer-track" aria-hidden="true"><div id="timerFill" class="timer-fill"></div></div>
+      <div class="phase-row">
+        <span id="phaseText" class="phase">記憶フェーズ — 番号と位置を覚える</span>
+        <span id="timeText" class="time">5.0</span>
+      </div>
+      <div id="cards" class="cards" aria-label="5枚のカード"></div>
+      <div id="questions" class="questions hidden" aria-label="回答する3問"></div>
+      <p id="memoryHint" class="memory-hint" aria-live="polite">どのカードが何番かを記憶</p>
+    </section>
+
+    <section id="resultScreen" class="screen result-screen hidden" data-result="success">
+      <div id="resultMark" class="result-mark">✓</div>
+      <h2 id="resultTitle" class="result-title">CLEARED</h2>
+      <p id="resultDetail" class="result-detail"></p>
+      <div class="result-actions">
+        <button id="retryButton" class="primary-btn" type="button">RETRY</button>
+        <button id="titleButton" class="secondary-btn" type="button">TITLE</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const MEMORY_MS = 5000;
+      const ANSWER_MS = 15000;
+      const CARD_COUNT = 5;
+      const QUESTION_COUNT = 3;
+      const COLORS = {
+        blue: { name: '青', css: '#3c9ae8' },
+        green: { name: '緑', css: '#13864b' },
+        red: { name: '赤', css: '#d92b6b' },
+        orange: { name: '橙', css: '#ef801d' },
+        yellow: { name: '黄', css: '#f6c51b' },
+        purple: { name: '紫', css: '#8343cf' },
+        black: { name: '黒', css: '#11181b' },
+        white: { name: '白', css: '#f3f5f4' }
+      };
+      const SHAPES = {
+        square: '四角',
+        rectangle: '長方形',
+        circle: '円',
+        triangle: '三角'
+      };
+      const QUESTION_TYPES = [
+        { key: 'backgroundColor', label: 'カードの背景色', kind: 'color' },
+        { key: 'colorWord', label: '上に書かれた色名', kind: 'color' },
+        { key: 'colorWordColor', label: '上の文字の色', kind: 'color' },
+        { key: 'outerShape', label: '外側の図形', kind: 'shape' },
+        { key: 'outerShapeColor', label: '外側の図形の色', kind: 'color' },
+        { key: 'innerShape', label: '内側の図形', kind: 'shape' },
+        { key: 'innerShapeColor', label: '内側の図形の色', kind: 'color' },
+        { key: 'shapeWord', label: '下に書かれた図形名', kind: 'shape' },
+        { key: 'shapeWordColor', label: '下の文字の色', kind: 'color' },
+        { key: 'numberColor', label: '数字の色', kind: 'color' }
+      ];
+
+      const app = document.getElementById('app');
+      const titleScreen = document.getElementById('titleScreen');
+      const gameScreen = document.getElementById('gameScreen');
+      const resultScreen = document.getElementById('resultScreen');
+      const cardsElement = document.getElementById('cards');
+      const questionsElement = document.getElementById('questions');
+      const phaseText = document.getElementById('phaseText');
+      const timeText = document.getElementById('timeText');
+      const progressText = document.getElementById('progressText');
+      const timerFill = document.getElementById('timerFill');
+      const memoryHint = document.getElementById('memoryHint');
+      const themeButton = document.getElementById('themeButton');
+      const resultMark = document.getElementById('resultMark');
+      const resultTitle = document.getElementById('resultTitle');
+      const resultDetail = document.getElementById('resultDetail');
+
+      let cards = [];
+      let questions = [];
+      let answers = new Map();
+      let phase = 'idle';
+      let phaseStartedAt = 0;
+      let animationFrame = 0;
+      let locked = false;
+      let audioContext = null;
+
+      const colorKeys = Object.keys(COLORS);
+      const shapeKeys = Object.keys(SHAPES);
+      const randomItem = (items) => items[Math.floor(Math.random() * items.length)];
+      const shuffle = (items) => {
+        const copy = [...items];
+        for (let index = copy.length - 1; index > 0; index--) {
+          const target = Math.floor(Math.random() * (index + 1));
+          [copy[index], copy[target]] = [copy[target], copy[index]];
+        }
+        return copy;
+      };
+      const differentColor = (...excluded) => randomItem(colorKeys.filter((key) => !excluded.includes(key)));
+
+      const showScreen = (screen) => {
+        [titleScreen, gameScreen, resultScreen].forEach((item) => item.classList.toggle('hidden', item !== screen));
+      };
+
+      const updateViewportHeight = () => {
+        const height = window.visualViewport?.height || window.innerHeight;
+        document.documentElement.style.setProperty('--viewport-height', `${height}px`);
+      };
+
+      const setTheme = (theme) => {
+        const white = theme === 'white';
+        app.dataset.theme = white ? 'white' : 'black';
+        themeButton.textContent = white ? 'BLACK' : 'WHITE';
+        document.querySelector('meta[name="theme-color"]').content = white ? '#f2f8f8' : '#081217';
+        try { localStorage.setItem('ptech-theme', app.dataset.theme); } catch (_) {}
+      };
+
+      const tone = (frequency, duration = .06, volume = .035) => {
+        try {
+          audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+          const oscillator = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          oscillator.type = 'sine';
+          oscillator.frequency.value = frequency;
+          gain.gain.setValueAtTime(volume, audioContext.currentTime);
+          gain.gain.exponentialRampToValueAtTime(.0001, audioContext.currentTime + duration);
+          oscillator.connect(gain).connect(audioContext.destination);
+          oscillator.start();
+          oscillator.stop(audioContext.currentTime + duration);
+        } catch (_) {}
+      };
+
+      const makeCard = (trueNumber) => {
+        const backgroundColor = randomItem(colorKeys);
+        const outerShapeColor = differentColor(backgroundColor);
+        const innerShapeColor = differentColor(outerShapeColor, backgroundColor);
+        const colorWordBackground = differentColor(backgroundColor);
+        const colorWordColor = differentColor(colorWordBackground);
+        const shapeWordBackground = differentColor(backgroundColor);
+        const shapeWordColor = differentColor(shapeWordBackground);
+        const numberColor = differentColor(backgroundColor);
+        return {
+          trueNumber,
+          fakeNumber: 0,
+          backgroundColor,
+          colorWord: randomItem(colorKeys),
+          colorWordBackground,
+          colorWordColor,
+          outerShape: randomItem(shapeKeys),
+          outerShapeColor,
+          innerShape: randomItem(shapeKeys),
+          innerShapeColor,
+          shapeWord: randomItem(shapeKeys),
+          shapeWordBackground,
+          shapeWordColor,
+          numberColor
+        };
+      };
+
+      const generateGame = () => {
+        const trueNumbers = shuffle([1, 2, 3, 4, 5]);
+        const fakeNumbers = shuffle([1, 2, 3, 4, 5]);
+        cards = trueNumbers.map((number, index) => {
+          const card = makeCard(number);
+          card.fakeNumber = fakeNumbers[index];
+          return card;
+        });
+        const askedNumbers = shuffle([1, 2, 3, 4, 5]).slice(0, QUESTION_COUNT);
+        const askedTypes = shuffle(QUESTION_TYPES).slice(0, QUESTION_COUNT);
+        questions = askedNumbers.map((number, index) => {
+          const card = cards.find((item) => item.trueNumber === number);
+          const type = askedTypes[index];
+          return { id: index, number, ...type, correct: card[type.key] };
+        });
+      };
+
+      const renderCards = (mode) => {
+        cardsElement.replaceChildren();
+        cards.forEach((card) => {
+          const element = document.createElement('article');
+          element.className = 'card';
+          element.style.setProperty('--card-bg', COLORS[card.backgroundColor].css);
+          if (mode === 'memory') {
+            element.style.setProperty('--memory-color', ['white', 'yellow'].includes(card.backgroundColor) ? '#132126' : '#fff');
+            element.setAttribute('aria-label', `本物の番号 ${card.trueNumber}`);
+            element.innerHTML = `<div class="memory-number">${card.trueNumber}</div>`;
+          } else {
+            element.setAttribute('aria-label', `偽番号 ${card.fakeNumber} の属性カード`);
+            element.innerHTML = `
+              <div class="card-detail">
+                <div class="attribute-band" style="--band-bg:${COLORS[card.colorWordBackground].css};--band-color:${COLORS[card.colorWordColor].css}">${COLORS[card.colorWord].name}</div>
+                <div class="shape-stage">
+                  <div class="shape ${card.outerShape}" style="--shape-color:${COLORS[card.outerShapeColor].css}">
+                    <div class="shape inner-shape ${card.innerShape}" style="--shape-color:${COLORS[card.innerShapeColor].css}"></div>
+                  </div>
+                </div>
+                <div class="attribute-band" style="--band-bg:${COLORS[card.shapeWordBackground].css};--band-color:${COLORS[card.shapeWordColor].css}">${SHAPES[card.shapeWord]}</div>
+                <div class="fake-number" style="--number-color:${COLORS[card.numberColor].css}">${card.fakeNumber}</div>
+              </div>`;
+          }
+          cardsElement.appendChild(element);
+        });
+      };
+
+      const makeChoice = (question, value) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'choice';
+        button.dataset.question = question.id;
+        button.dataset.value = value;
+        if (question.kind === 'color') {
+          button.style.setProperty('--choice-color', COLORS[value].css);
+          button.setAttribute('aria-label', COLORS[value].name);
+          button.title = COLORS[value].name;
+        } else {
+          button.textContent = SHAPES[value];
+        }
+        button.addEventListener('click', onChoiceClick);
+        return button;
+      };
+
+      const renderQuestions = () => {
+        questionsElement.replaceChildren();
+        questions.forEach((question) => {
+          const row = document.createElement('section');
+          row.className = 'question';
+          const prompt = document.createElement('p');
+          prompt.className = 'question-text';
+          prompt.textContent = `本物の番号 ${question.number} のカード — ${question.label}？`;
+          const choices = document.createElement('div');
+          choices.className = `choices ${question.kind}-choices`;
+          const values = question.kind === 'color' ? colorKeys : shapeKeys;
+          values.forEach((value) => choices.appendChild(makeChoice(question, value)));
+          row.append(prompt, choices);
+          questionsElement.appendChild(row);
+        });
+      };
+
+      function onChoiceClick(event) {
+        if (phase !== 'answer' || locked) return;
+        const button = event.currentTarget;
+        const questionId = Number(button.dataset.question);
+        answers.set(questionId, button.dataset.value);
+        questionsElement.querySelectorAll(`[data-question="${questionId}"]`).forEach((choice) => {
+          choice.classList.toggle('selected', choice === button);
+        });
+        progressText.textContent = `回答 ${answers.size}/${QUESTION_COUNT}`;
+        tone(360 + answers.size * 55, .05, .025);
+        if (answers.size === QUESTION_COUNT) {
+          locked = true;
+          window.setTimeout(checkAnswers, 220);
+        }
+      }
+
+      const checkAnswers = () => {
+        let correctCount = 0;
+        questions.forEach((question) => {
+          const selected = answers.get(question.id);
+          if (selected === question.correct) correctCount++;
+          questionsElement.querySelectorAll(`[data-question="${question.id}"]`).forEach((choice) => {
+            if (choice.dataset.value === question.correct) choice.classList.add('correct');
+            if (choice.dataset.value === selected && selected !== question.correct) choice.classList.add('wrong');
+            choice.disabled = true;
+          });
+        });
+        window.setTimeout(() => finish(correctCount === QUESTION_COUNT, `${correctCount} / ${QUESTION_COUNT} 正解`), 480);
+      };
+
+      const startAnswer = () => {
+        phase = 'answer';
+        phaseStartedAt = performance.now();
+        locked = false;
+        answers.clear();
+        renderCards('answer');
+        renderQuestions();
+        questionsElement.classList.remove('hidden');
+        memoryHint.classList.add('hidden');
+        phaseText.textContent = '回答フェーズ — 表示中の番号は偽物です';
+        progressText.textContent = `回答 0/${QUESTION_COUNT}`;
+        timeText.textContent = '15.0';
+        timerFill.style.transform = 'scaleX(1)';
+        timerFill.classList.remove('danger');
+        tone(520, .09, .03);
+        animationFrame = requestAnimationFrame(updateTimer);
+      };
+
+      const updateTimer = (now) => {
+        if (phase !== 'memory' && phase !== 'answer') return;
+        const limit = phase === 'memory' ? MEMORY_MS : ANSWER_MS;
+        const remaining = Math.max(0, limit - (now - phaseStartedAt));
+        timeText.textContent = (remaining / 1000).toFixed(1);
+        const ratio = remaining / limit;
+        timerFill.style.transform = `scaleX(${ratio})`;
+        timerFill.classList.toggle('danger', ratio <= .25);
+        if (remaining <= 0) {
+          if (phase === 'memory') startAnswer();
+          else finish(false, `${answers.size} / ${QUESTION_COUNT} 回答`, 'TIME UP');
+          return;
+        }
+        animationFrame = requestAnimationFrame(updateTimer);
+      };
+
+      const startGame = () => {
+        cancelAnimationFrame(animationFrame);
+        generateGame();
+        phase = 'memory';
+        phaseStartedAt = performance.now();
+        locked = true;
+        answers.clear();
+        renderCards('memory');
+        questionsElement.replaceChildren();
+        questionsElement.classList.add('hidden');
+        memoryHint.classList.remove('hidden');
+        memoryHint.textContent = 'どのカードが何番かを記憶';
+        phaseText.textContent = '記憶フェーズ — 番号と位置を覚える';
+        progressText.textContent = 'MEMORY';
+        timeText.textContent = '5.0';
+        timerFill.style.transform = 'scaleX(1)';
+        timerFill.classList.remove('danger');
+        showScreen(gameScreen);
+        animationFrame = requestAnimationFrame(updateTimer);
+      };
+
+      const finish = (success, detail, title = '') => {
+        if (phase !== 'memory' && phase !== 'answer') return;
+        phase = 'result';
+        locked = true;
+        cancelAnimationFrame(animationFrame);
+        resultScreen.dataset.result = success ? 'success' : 'fail';
+        resultMark.textContent = success ? '✓' : '×';
+        resultTitle.textContent = title || (success ? 'CLEARED' : 'FAILED');
+        resultDetail.textContent = detail;
+        showScreen(resultScreen);
+        if (success) {
+          tone(523, .12, .045);
+          window.setTimeout(() => tone(659, .12, .045), 100);
+          window.setTimeout(() => tone(784, .18, .045), 200);
+        } else {
+          tone(180, .18, .045);
+        }
+      };
+
+      const goToTitle = () => {
+        phase = 'idle';
+        locked = false;
+        cancelAnimationFrame(animationFrame);
+        showScreen(titleScreen);
+      };
+
+      document.getElementById('startButton').addEventListener('click', startGame);
+      document.getElementById('retryButton').addEventListener('click', startGame);
+      document.getElementById('titleButton').addEventListener('click', goToTitle);
+      document.getElementById('exitButton').addEventListener('click', goToTitle);
+      themeButton.addEventListener('click', () => setTheme(app.dataset.theme === 'white' ? 'black' : 'white'));
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !gameScreen.classList.contains('hidden')) goToTitle();
+        if ((event.key === 'Enter' || event.key === ' ') && !titleScreen.classList.contains('hidden')) startGame();
+      });
+      window.addEventListener('resize', updateViewportHeight);
+      window.visualViewport?.addEventListener('resize', updateViewportHeight);
+      window.addEventListener('pageshow', updateViewportHeight);
+      updateViewportHeight();
+      let storedTheme = 'black';
+      try { storedTheme = localStorage.getItem('ptech-theme') || 'black'; } catch (_) {}
+      setTheme(storedTheme);
+    })();
+  </script>
+</body>
+</html>
