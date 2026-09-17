@@ -35,3 +35,17 @@ games/
 ```
 
 外部ライブラリとビルド作業は不要です。
+
+## Edit game menu
+
+ゲーム選択カードの表示は [`games.json`](./games.json) で管理します。
+
+- `title`: ゲーム名
+- `label`: `ATM` や `OIL RIG` などの分類表示
+- `description`: ゲーム説明
+- `href`: ゲームのURL
+- `status`: `PLAYABLE` や `COMING SOON`
+- `color`: カードのアクセントカラー
+- `enabled`: `true` で起動可能、`false` で準備中
+
+`title`、`label`、`description`、`status`、`color` が未設定の場合は、共通の初期文言や色を自動で使用します。
