@@ -9,15 +9,27 @@
     :root {
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color-scheme: dark;
+      --viewport-height: 100dvh;
     }
     * { box-sizing: border-box; }
-    html, body { margin: 0; min-height: 100%; }
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      overscroll-behavior: none;
+    }
+    html { background: #080809; }
     body {
-      min-height: 100dvh;
+      --page-pad: clamp(0px, 2dvh, 16px);
+      position: fixed;
+      inset: 0 auto auto 0;
+      height: var(--viewport-height);
       display: grid;
       place-items: center;
       background: #080809;
-      padding: 16px;
+      padding: var(--page-pad);
+      overflow: hidden;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
     }
@@ -34,7 +46,9 @@
       --primaryText: #111113;
       --danger: #ef4444;
       width: min(100%, 560px);
-      min-height: min(760px, calc(100dvh - 32px));
+      height: min(760px, 100%);
+      min-height: 0;
+      max-height: 100%;
       background: var(--bg);
       color: var(--text);
       border: 1px solid var(--border);
@@ -56,8 +70,15 @@
     }
 
     .screen {
-      min-height: min(760px, calc(100dvh - 32px));
-      padding: max(20px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      padding:
+        max(clamp(10px, 2.5dvh, 20px), env(safe-area-inset-top))
+        max(clamp(12px, 2.3dvh, 18px), env(safe-area-inset-right))
+        max(clamp(10px, 2.5dvh, 20px), env(safe-area-inset-bottom))
+        max(clamp(12px, 2.3dvh, 18px), env(safe-area-inset-left));
     }
     .hidden { display: none !important; }
     .muted { color: var(--muted); }
@@ -67,7 +88,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 30px;
+      gap: clamp(16px, 4dvh, 30px);
       text-align: center;
       position: relative;
     }
@@ -82,7 +103,7 @@
       position: absolute;
       top: max(18px, env(safe-area-inset-top));
       right: max(18px, env(safe-area-inset-right));
-      min-height: 42px;
+      min-height: clamp(36px, 5dvh, 42px);
       padding: 0 14px;
       border: 1px solid var(--border);
       border-radius: 999px;
@@ -98,7 +119,7 @@
       cursor: pointer;
     }
     .primary-btn {
-      min-height: 54px;
+      min-height: clamp(46px, 6.5dvh, 54px);
       padding: 0 38px;
       border-radius: 14px;
       background: var(--primary);
@@ -107,7 +128,7 @@
       letter-spacing: .08em;
     }
     .secondary-btn {
-      min-height: 52px;
+      min-height: clamp(44px, 6.2dvh, 52px);
       padding: 0 28px;
       border: 1px solid var(--border);
       border-radius: 14px;
@@ -122,7 +143,7 @@
     .game-screen {
       display: flex;
       flex-direction: column;
-      gap: 26px;
+      gap: clamp(10px, 2.8dvh, 26px);
     }
     .top-row {
       display: flex;
@@ -131,7 +152,7 @@
       gap: 12px;
     }
     .exit-btn {
-      min-height: 42px;
+      min-height: clamp(36px, 5dvh, 42px);
       padding: 0 15px;
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -154,7 +175,7 @@
     }
     .timer-track {
       width: 100%;
-      height: 12px;
+      height: clamp(8px, 1.3dvh, 12px);
       border-radius: 999px;
       overflow: hidden;
       background: var(--border);
@@ -167,17 +188,17 @@
     }
 
     .code-area {
-      margin-top: 18px;
+      margin-top: clamp(0px, 1.8dvh, 18px);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 14px;
+      gap: clamp(8px, 1.5dvh, 14px);
     }
     .code-slots {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       width: min(100%, 360px);
-      gap: 10px;
+      gap: clamp(6px, 1.2dvh, 10px);
     }
     .slot-wrap { min-width: 0; }
     .slot {
@@ -194,7 +215,7 @@
     }
     .judge-bar {
       height: 7px;
-      margin-top: 8px;
+      margin-top: clamp(5px, 1dvh, 8px);
       border-radius: 999px;
       background: var(--border);
       transform-origin: center;
@@ -217,10 +238,11 @@
       align-self: center;
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 10px;
+      gap: clamp(6px, 1.2dvh, 10px);
     }
     .key {
-      min-height: 58px;
+      height: clamp(42px, 7.2dvh, 58px);
+      min-height: 0;
       border: 1px solid var(--border);
       border-radius: 14px;
       background: var(--panel);
@@ -251,14 +273,14 @@
     }
     .result-card {
       width: min(100%, 370px);
-      padding: 24px;
+      padding: clamp(14px, 3dvh, 24px);
       border: 1px solid var(--border);
       border-radius: 18px;
       background: var(--panel);
       text-align: left;
     }
     .result-code {
-      margin: 8px 0 24px;
+      margin: 8px 0 clamp(14px, 3dvh, 24px);
       text-align: center;
       font-size: 2.5rem;
       font-weight: 950;
@@ -280,18 +302,29 @@
     }
 
     @media (max-width: 520px) {
-      body { padding: 0; background: var(--bg); }
+      body {
+        --page-pad: 0px;
+        background: var(--bg);
+      }
       #app {
         width: 100%;
-        min-height: 100dvh;
+        height: 100%;
+        min-height: 0;
+        max-height: 100%;
         border-radius: 0;
         border-left: 0;
         border-right: 0;
       }
-      .screen { min-height: 100dvh; }
-      .game-screen { gap: 22px; }
-      .keypad { gap: 8px; }
-      .key { min-height: 56px; }
+    }
+
+    @media (max-height: 560px) {
+      .brand { font-size: clamp(1.65rem, 7vw, 2.4rem); }
+      .slot { font-size: clamp(1.45rem, 7dvh, 2rem); }
+      .message { min-height: 18px; font-size: .8rem; }
+      .key { height: clamp(36px, 7dvh, 42px); }
+      .key.utility { font-size: .78rem; }
+      .result-title { font-size: clamp(1.55rem, 7dvh, 2rem); }
+      .result-code { font-size: clamp(1.8rem, 8dvh, 2.5rem); }
     }
   </style>
 </head>
@@ -370,6 +403,17 @@
       const LIMIT_SECONDS = 60;
       const REVEAL_STEP_MS = 250;
       const RESULT_HOLD_MS = 600;
+
+      function syncViewportHeight() {
+        const height = window.visualViewport?.height || window.innerHeight;
+        document.documentElement.style.setProperty('--viewport-height', `${height}px`);
+      }
+
+      syncViewportHeight();
+      window.addEventListener('resize', syncViewportHeight, { passive: true });
+      window.addEventListener('orientationchange', syncViewportHeight, { passive: true });
+      window.visualViewport?.addEventListener('resize', syncViewportHeight, { passive: true });
+      window.visualViewport?.addEventListener('scroll', syncViewportHeight, { passive: true });
 
       const app = document.getElementById('app');
       const titleScreen = document.getElementById('titleScreen');
