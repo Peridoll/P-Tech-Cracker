@@ -23,7 +23,10 @@ GTA FiveMの犯罪ギミックを練習するための、スマートフォン�
 ### P-Tech: JumpingMaze
 
 - 対象: オイルリグ強盗
-- 今後追加予定
+- 7列 × 7行、数字は1〜3
+- 数字ぶん上下左右へジャンプ
+- 5秒の記憶フェーズと30秒の追跡フェーズ
+- ミス3回以内に右下へ到達すると成功
 
 ## Structure
 
@@ -32,6 +35,7 @@ index.html                  P-Techタイトル / ゲーム選択
 games/
   code-cracker/             CodeCracker本体と仕様
   chain-braker/             ChainBraker本体と仕様
+  jumping-maze/             JumpingMaze本体と仕様
 ```
 
 外部ライブラリとビルド作業は不要です。

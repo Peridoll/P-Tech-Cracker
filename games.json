@@ -24,11 +24,11 @@
       "id": "jumping-maze",
       "title": "JUMPING MAZE",
       "label": "OIL RIG",
-      "description": "次に追加予定のオイルリグ用ギミック",
-      "href": "",
-      "status": "COMING SOON",
+      "description": "数字を記憶して左上から右下へ跳ぶギミック",
+      "href": "games/jumping-maze/?v=20260917-1",
+      "status": "PLAYABLE",
       "color": "#a982ff",
-      "enabled": false
+      "enabled": true
     }
   ]
 }
