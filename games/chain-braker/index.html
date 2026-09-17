@@ -1,0 +1,669 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#090a0d" />
+  <title>P-Tech: ChainBraker</title>
+  <style>
+    :root {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color-scheme: dark;
+      --viewport-height: 100dvh;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      overscroll-behavior: none;
+      background: #06070a;
+    }
+    body {
+      position: fixed;
+      inset: 0;
+      height: var(--viewport-height);
+      display: grid;
+      place-items: center;
+      padding: clamp(0px, 1.8dvh, 14px);
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    button { font: inherit; touch-action: manipulation; }
+
+    #app {
+      --bg: #090a0d;
+      --panel: #12151b;
+      --panel-2: #1a1e26;
+      --text: #f7f8fb;
+      --muted: #8e96a8;
+      --border: #2b313d;
+      --primary: #ff671f;
+      --primary-text: #fff;
+      width: min(100%, 780px);
+      height: min(820px, 100%);
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: clamp(0px, 3vw, 24px);
+      background: var(--bg);
+      color: var(--text);
+      box-shadow: 0 22px 80px rgba(0, 0, 0, .45);
+    }
+    #app[data-theme="white"] {
+      --bg: #f4f6f9;
+      --panel: #fff;
+      --panel-2: #e7ebf1;
+      --text: #11151c;
+      --muted: #687080;
+      --border: #cdd3dc;
+      color-scheme: light;
+    }
+
+    .screen {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      padding:
+        max(clamp(10px, 2.2dvh, 18px), env(safe-area-inset-top))
+        max(clamp(10px, 2vw, 18px), env(safe-area-inset-right))
+        max(clamp(10px, 2.2dvh, 18px), env(safe-area-inset-bottom))
+        max(clamp(10px, 2vw, 18px), env(safe-area-inset-left));
+    }
+    .hidden { display: none !important; }
+
+    .title-screen, .result-screen {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: clamp(15px, 3.5dvh, 30px);
+    }
+    .eyebrow {
+      margin: 0;
+      color: var(--primary);
+      font-size: clamp(.68rem, 2.4vw, .8rem);
+      font-weight: 950;
+      letter-spacing: .3em;
+    }
+    .brand {
+      margin: 0;
+      font-size: clamp(2.1rem, 10vw, 4.2rem);
+      line-height: .92;
+      font-weight: 1000;
+      letter-spacing: .03em;
+    }
+    .brand span { display: block; color: var(--primary); }
+    .lead {
+      max-width: 34rem;
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(.82rem, 3vw, 1rem);
+      line-height: 1.8;
+    }
+    .theme-btn {
+      position: absolute;
+      top: max(4px, env(safe-area-inset-top));
+      right: max(4px, env(safe-area-inset-right));
+      min-height: 40px;
+      padding: 0 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--text);
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: .12em;
+      cursor: pointer;
+    }
+    .hub-link {
+      position: absolute;
+      top: max(4px, env(safe-area-inset-top));
+      left: max(4px, env(safe-area-inset-left));
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 13px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--text);
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: .08em;
+    }
+    .primary-btn, .secondary-btn, .exit-btn {
+      border: 0;
+      cursor: pointer;
+      font-weight: 950;
+    }
+    .primary-btn {
+      min-width: 170px;
+      min-height: 54px;
+      padding: 0 34px;
+      border-radius: 14px;
+      background: var(--primary);
+      color: var(--primary-text);
+      letter-spacing: .14em;
+      box-shadow: 0 10px 30px rgba(255, 103, 31, .25);
+    }
+    .secondary-btn {
+      min-height: 48px;
+      padding: 0 28px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--panel);
+      color: var(--text);
+      letter-spacing: .08em;
+    }
+    button:active { transform: translateY(1px) scale(.99); }
+
+    .game-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(7px, 1.5dvh, 13px);
+    }
+    .hud {
+      width: 100%;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+    }
+    .exit-btn {
+      min-height: 38px;
+      padding: 0 13px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: var(--panel);
+      color: var(--text);
+      font-size: .76rem;
+      letter-spacing: .08em;
+    }
+    .game-title {
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      font-size: clamp(.82rem, 3vw, 1rem);
+      font-weight: 950;
+      letter-spacing: .06em;
+    }
+    .time {
+      min-width: 58px;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+      font-size: clamp(1.1rem, 4vw, 1.35rem);
+      font-weight: 1000;
+    }
+    .timer-track {
+      width: 100%;
+      height: clamp(7px, 1.2dvh, 10px);
+      overflow: hidden;
+      border-radius: 999px;
+      background: var(--panel-2);
+    }
+    .timer-fill {
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--primary);
+      transform-origin: left center;
+      transition: transform .08s linear, background .2s ease;
+    }
+    .timer-fill.danger { background: #ef3147; }
+    .instruction {
+      width: 100%;
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(.7rem, 2.5vw, .84rem);
+      line-height: 1.35;
+    }
+
+    .board-shell {
+      width: min(100%, calc((var(--viewport-height) - 178px) * 1.375), 740px);
+      max-height: calc(var(--viewport-height) - 178px);
+      aspect-ratio: 11 / 8;
+      flex: 0 1 auto;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.025), transparent),
+        var(--panel);
+      box-shadow: inset 0 0 30px rgba(0, 0, 0, .18);
+    }
+    #board {
+      position: absolute;
+      inset: 0;
+    }
+    .tile {
+      position: absolute;
+      width: calc(100% / 11);
+      height: calc(100% / 8);
+      padding: 2px;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      transition: left .22s cubic-bezier(.2,.8,.2,1), bottom .22s cubic-bezier(.2,.8,.2,1), opacity .14s ease, transform .14s ease;
+      will-change: left, bottom, transform, opacity;
+    }
+    .tile-face {
+      width: 100%;
+      height: 100%;
+      border: 1px solid rgba(255,255,255,.46);
+      border-radius: clamp(2px, .8vw, 5px);
+      box-shadow:
+        inset 2px 2px 0 rgba(255,255,255,.18),
+        inset -2px -2px 0 rgba(0,0,0,.16),
+        0 1px 3px rgba(0,0,0,.26);
+      transition: filter .1s ease, transform .1s ease;
+    }
+    .tile[data-color="red"] .tile-face { background: linear-gradient(145deg, #ff3148, #df0e27); }
+    .tile[data-color="green"] .tile-face { background: linear-gradient(145deg, #a8d958, #76ad32); }
+    .tile[data-color="blue"] .tile-face { background: linear-gradient(145deg, #63b5de, #3688b6); }
+    .tile:hover .tile-face { filter: brightness(1.12); }
+    .tile.group .tile-face {
+      filter: brightness(1.22);
+      transform: scale(.93);
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.8), 0 0 12px rgba(255,255,255,.22);
+    }
+    .tile.removing {
+      opacity: 0;
+      transform: scale(.5) rotate(5deg);
+      pointer-events: none;
+    }
+    .tile.invalid { animation: invalid .24s ease; }
+    @keyframes invalid {
+      0%, 100% { transform: translateX(0); }
+      30% { transform: translateX(-4px); }
+      70% { transform: translateX(4px); }
+    }
+
+    .status-row {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: clamp(.68rem, 2.4vw, .8rem);
+      font-weight: 800;
+    }
+    .status-row strong { color: var(--text); }
+    .game-message {
+      min-height: 20px;
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(.7rem, 2.5vw, .84rem);
+      font-weight: 800;
+    }
+    .game-message.warn { color: #f05c6e; }
+
+    .result-mark {
+      width: clamp(74px, 19vw, 106px);
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border: 3px solid currentColor;
+      border-radius: 50%;
+      color: var(--primary);
+      font-size: clamp(2rem, 9vw, 3.6rem);
+      font-weight: 1000;
+    }
+    .result-screen[data-result="fail"] .result-mark { color: #ef3147; }
+    .result-title {
+      margin: 0;
+      font-size: clamp(2rem, 9vw, 4rem);
+      line-height: 1;
+      font-weight: 1000;
+      letter-spacing: .04em;
+    }
+    .result-detail {
+      margin: 0;
+      color: var(--muted);
+      font-weight: 800;
+    }
+    .result-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+    @media (max-height: 560px) {
+      .screen { padding-top: 7px; padding-bottom: 7px; }
+      .game-screen { gap: 5px; }
+      .instruction { display: none; }
+      .board-shell {
+        width: min(100%, calc((var(--viewport-height) - 118px) * 1.375), 740px);
+        max-height: calc(var(--viewport-height) - 118px);
+      }
+      .game-message { min-height: 16px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main id="app" data-theme="black">
+    <section id="titleScreen" class="screen title-screen">
+      <a class="hub-link" href="../../" aria-label="ゲーム選択へ戻る">← P-TECH</a>
+      <button id="themeButton" class="theme-btn" type="button" aria-label="テーマを切り替える">WHITE</button>
+      <p class="eyebrow">P-TECH</p>
+      <h1 class="brand">CHAIN<span>BRAKER</span></h1>
+      <p class="lead">同じ色が2個以上つながったブロックを消去。<br />すべて消せば解除成功。</p>
+      <button id="startButton" class="primary-btn" type="button">START</button>
+    </section>
+
+    <section id="gameScreen" class="screen game-screen hidden" aria-label="ゲーム画面">
+      <header class="hud">
+        <button id="exitButton" class="exit-btn" type="button">EXIT</button>
+        <div class="game-title">CHAIN BRAKER</div>
+        <div id="timeText" class="time">30.0</div>
+      </header>
+      <div class="timer-track" aria-hidden="true"><div id="timerFill" class="timer-fill"></div></div>
+      <p class="instruction">同じ色のブロックのかたまりをタップ</p>
+      <div id="boardShell" class="board-shell">
+        <div id="board" role="grid" aria-label="11列8行のカラーブロック"></div>
+      </div>
+      <div class="status-row">
+        <span>BLOCKS <strong id="remainingText">88</strong></span>
+        <span>CHAIN <strong id="chainText">0</strong></span>
+      </div>
+      <p id="gameMessage" class="game-message" aria-live="polite">2個以上つながった色を選択</p>
+    </section>
+
+    <section id="resultScreen" class="screen result-screen hidden" data-result="success">
+      <div id="resultMark" class="result-mark">✓</div>
+      <h2 id="resultTitle" class="result-title">CLEARED</h2>
+      <p id="resultDetail" class="result-detail"></p>
+      <div class="result-actions">
+        <button id="retryButton" class="primary-btn" type="button">RETRY</button>
+        <button id="titleButton" class="secondary-btn" type="button">TITLE</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const ROWS = 8;
+      const COLS = 11;
+      const LIMIT_MS = 30000;
+      const COLORS = ['red', 'green', 'blue'];
+      const app = document.getElementById('app');
+      const titleScreen = document.getElementById('titleScreen');
+      const gameScreen = document.getElementById('gameScreen');
+      const resultScreen = document.getElementById('resultScreen');
+      const board = document.getElementById('board');
+      const timeText = document.getElementById('timeText');
+      const timerFill = document.getElementById('timerFill');
+      const remainingText = document.getElementById('remainingText');
+      const chainText = document.getElementById('chainText');
+      const gameMessage = document.getElementById('gameMessage');
+      const themeButton = document.getElementById('themeButton');
+      const resultMark = document.getElementById('resultMark');
+      const resultTitle = document.getElementById('resultTitle');
+      const resultDetail = document.getElementById('resultDetail');
+
+      let columns = [];
+      let nextId = 1;
+      let startedAt = 0;
+      let animationFrame = 0;
+      let active = false;
+      let locked = false;
+      let chainCount = 0;
+      let audioContext = null;
+
+      const showScreen = (screen) => {
+        [titleScreen, gameScreen, resultScreen].forEach((item) => item.classList.toggle('hidden', item !== screen));
+      };
+
+      const updateViewportHeight = () => {
+        const height = window.visualViewport?.height || window.innerHeight;
+        document.documentElement.style.setProperty('--viewport-height', `${height}px`);
+      };
+
+      const setTheme = (theme) => {
+        const white = theme === 'white';
+        app.dataset.theme = white ? 'white' : 'black';
+        themeButton.textContent = white ? 'BLACK' : 'WHITE';
+        document.querySelector('meta[name="theme-color"]').content = white ? '#f4f6f9' : '#090a0d';
+        try { localStorage.setItem('ptech-theme', app.dataset.theme); } catch (_) {}
+      };
+
+      const tone = (frequency, duration = .05, volume = .035) => {
+        try {
+          audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+          const oscillator = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          oscillator.type = 'sine';
+          oscillator.frequency.value = frequency;
+          gain.gain.setValueAtTime(volume, audioContext.currentTime);
+          gain.gain.exponentialRampToValueAtTime(.0001, audioContext.currentTime + duration);
+          oscillator.connect(gain).connect(audioContext.destination);
+          oscillator.start();
+          oscillator.stop(audioContext.currentTime + duration);
+        } catch (_) {}
+      };
+
+      const makeBoard = () => {
+        do {
+          columns = Array.from({ length: COLS }, () =>
+            Array.from({ length: ROWS }, () => ({ id: nextId++, color: COLORS[Math.floor(Math.random() * COLORS.length)] }))
+          );
+        } while (!hasMove());
+      };
+
+      const tileAt = (col, row) => columns[col]?.[row] || null;
+
+      const connectedGroup = (startCol, startRow) => {
+        const first = tileAt(startCol, startRow);
+        if (!first) return [];
+        const found = [];
+        const queue = [[startCol, startRow]];
+        const visited = new Set();
+        while (queue.length) {
+          const [col, row] = queue.shift();
+          const key = `${col}:${row}`;
+          if (visited.has(key)) continue;
+          visited.add(key);
+          const tile = tileAt(col, row);
+          if (!tile || tile.color !== first.color) continue;
+          found.push({ col, row, id: tile.id });
+          queue.push([col - 1, row], [col + 1, row], [col, row - 1], [col, row + 1]);
+        }
+        return found;
+      };
+
+      const hasMove = () => {
+        for (let col = 0; col < columns.length; col++) {
+          for (let row = 0; row < columns[col].length; row++) {
+            const color = columns[col][row].color;
+            if (columns[col][row + 1]?.color === color || columns[col + 1]?.[row]?.color === color) return true;
+          }
+        }
+        return false;
+      };
+
+      const countTiles = () => columns.reduce((sum, column) => sum + column.length, 0);
+
+      const render = () => {
+        const liveIds = new Set();
+        columns.forEach((column, col) => {
+          column.forEach((tile, row) => {
+            liveIds.add(String(tile.id));
+            let element = board.querySelector(`[data-id="${tile.id}"]`);
+            if (!element) {
+              element = document.createElement('button');
+              element.type = 'button';
+              element.className = 'tile';
+              element.dataset.id = tile.id;
+              element.innerHTML = '<span class="tile-face"></span>';
+              element.setAttribute('role', 'gridcell');
+              element.addEventListener('click', onTileClick);
+              element.addEventListener('pointerenter', previewGroup);
+              element.addEventListener('pointerleave', clearPreview);
+              board.appendChild(element);
+            }
+            element.dataset.col = col;
+            element.dataset.row = row;
+            element.dataset.color = tile.color;
+            element.style.left = `${(col / COLS) * 100}%`;
+            element.style.bottom = `${(row / ROWS) * 100}%`;
+            element.setAttribute('aria-label', `${tile.color} block`);
+          });
+        });
+        board.querySelectorAll('.tile').forEach((element) => {
+          if (!liveIds.has(element.dataset.id) && !element.classList.contains('removing')) element.remove();
+        });
+        remainingText.textContent = countTiles();
+        chainText.textContent = chainCount;
+      };
+
+      function previewGroup(event) {
+        if (!active || locked) return;
+        clearPreview();
+        const element = event.currentTarget;
+        const group = connectedGroup(Number(element.dataset.col), Number(element.dataset.row));
+        if (group.length < 2) return;
+        const ids = new Set(group.map((item) => String(item.id)));
+        board.querySelectorAll('.tile').forEach((tile) => tile.classList.toggle('group', ids.has(tile.dataset.id)));
+      }
+
+      function clearPreview() {
+        board.querySelectorAll('.tile.group').forEach((tile) => tile.classList.remove('group'));
+      }
+
+      function onTileClick(event) {
+        if (!active || locked) return;
+        const element = event.currentTarget;
+        const col = Number(element.dataset.col);
+        const row = Number(element.dataset.row);
+        const group = connectedGroup(col, row);
+        clearPreview();
+        if (group.length < 2) {
+          element.classList.remove('invalid');
+          void element.offsetWidth;
+          element.classList.add('invalid');
+          gameMessage.textContent = '1個だけのブロックは消せません';
+          gameMessage.classList.add('warn');
+          tone(145, .08, .025);
+          return;
+        }
+
+        locked = true;
+        gameMessage.classList.remove('warn');
+        gameMessage.textContent = `${group.length} BLOCKS CLEARED`;
+        chainCount++;
+        const ids = new Set(group.map((item) => String(item.id)));
+        board.querySelectorAll('.tile').forEach((tile) => {
+          if (ids.has(tile.dataset.id)) tile.classList.add('removing');
+        });
+        tone(300 + Math.min(group.length, 12) * 25, .07);
+
+        window.setTimeout(() => {
+          columns = columns
+            .map((column) => column.filter((tile) => !ids.has(String(tile.id))))
+            .filter((column) => column.length > 0);
+          board.querySelectorAll('.tile.removing').forEach((tile) => tile.remove());
+          render();
+          window.setTimeout(resolveBoardState, 240);
+        }, 150);
+      }
+
+      const resolveBoardState = () => {
+        if (!active) return;
+        locked = false;
+        const remaining = countTiles();
+        if (remaining === 0) {
+          finish(true, 'ALL BLOCKS CLEARED');
+        } else if (!hasMove()) {
+          finish(false, `${remaining} BLOCKS LEFT`);
+        }
+      };
+
+      const updateTimer = (now) => {
+        if (!active) return;
+        const elapsed = now - startedAt;
+        const remaining = Math.max(0, LIMIT_MS - elapsed);
+        timeText.textContent = (remaining / 1000).toFixed(1);
+        const ratio = remaining / LIMIT_MS;
+        timerFill.style.transform = `scaleX(${ratio})`;
+        timerFill.classList.toggle('danger', ratio <= .25);
+        if (remaining <= 0) {
+          finish(false, `${countTiles()} BLOCKS LEFT`, 'TIME UP');
+          return;
+        }
+        animationFrame = requestAnimationFrame(updateTimer);
+      };
+
+      const startGame = () => {
+        cancelAnimationFrame(animationFrame);
+        makeBoard();
+        board.replaceChildren();
+        chainCount = 0;
+        locked = false;
+        active = true;
+        startedAt = performance.now();
+        timeText.textContent = '30.0';
+        timerFill.style.transform = 'scaleX(1)';
+        timerFill.classList.remove('danger');
+        gameMessage.textContent = '2個以上つながった色を選択';
+        gameMessage.classList.remove('warn');
+        render();
+        showScreen(gameScreen);
+        animationFrame = requestAnimationFrame(updateTimer);
+      };
+
+      const finish = (success, detail, overrideTitle = '') => {
+        if (!active) return;
+        active = false;
+        locked = true;
+        cancelAnimationFrame(animationFrame);
+        resultScreen.dataset.result = success ? 'success' : 'fail';
+        resultMark.textContent = success ? '✓' : '×';
+        resultTitle.textContent = overrideTitle || (success ? 'CLEARED' : 'NO MOVES');
+        resultDetail.textContent = detail;
+        showScreen(resultScreen);
+        if (success) {
+          tone(523, .12, .045);
+          window.setTimeout(() => tone(659, .12, .045), 100);
+          window.setTimeout(() => tone(784, .18, .045), 200);
+        } else {
+          tone(180, .18, .045);
+        }
+      };
+
+      const goToTitle = () => {
+        active = false;
+        locked = false;
+        cancelAnimationFrame(animationFrame);
+        showScreen(titleScreen);
+      };
+
+      document.getElementById('startButton').addEventListener('click', startGame);
+      document.getElementById('retryButton').addEventListener('click', startGame);
+      document.getElementById('titleButton').addEventListener('click', goToTitle);
+      document.getElementById('exitButton').addEventListener('click', goToTitle);
+      themeButton.addEventListener('click', () => {
+        setTheme(app.dataset.theme === 'white' ? 'black' : 'white');
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !gameScreen.classList.contains('hidden')) goToTitle();
+        if ((event.key === 'Enter' || event.key === ' ') && !titleScreen.classList.contains('hidden')) startGame();
+      });
+      window.addEventListener('resize', updateViewportHeight);
+      window.visualViewport?.addEventListener('resize', updateViewportHeight);
+      updateViewportHeight();
+      let storedTheme = 'black';
+      try { storedTheme = localStorage.getItem('ptech-theme') || 'black'; } catch (_) {}
+      setTheme(storedTheme);
+    })();
+  </script>
+</body>
+</html>

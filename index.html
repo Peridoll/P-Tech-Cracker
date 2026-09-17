@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0b0b0c" />
-  <title>CODE CRACKER</title>
+  <meta name="theme-color" content="#08090c" />
+  <title>P-Tech</title>
   <style>
     :root {
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -13,653 +13,363 @@
     }
     * { box-sizing: border-box; }
     html, body {
-      margin: 0;
       width: 100%;
       height: 100%;
+      margin: 0;
       overflow: hidden;
       overscroll-behavior: none;
+      background: #050609;
     }
-    html { background: #080809; }
     body {
-      --page-pad: clamp(0px, 2dvh, 16px);
       position: fixed;
-      inset: 0 auto auto 0;
+      inset: 0;
       height: var(--viewport-height);
       display: grid;
       place-items: center;
-      background: #080809;
-      padding: var(--page-pad);
-      overflow: hidden;
+      padding: clamp(0px, 1.8dvh, 14px);
       -webkit-tap-highlight-color: transparent;
       user-select: none;
     }
-    button { font: inherit; touch-action: manipulation; }
+    button, a { font: inherit; touch-action: manipulation; }
 
     #app {
-      --bg: #0b0b0c;
-      --panel: #161618;
-      --panel-2: #1d1d20;
-      --text: #f7f7f7;
-      --muted: #92929a;
-      --border: #34343a;
-      --primary: #f7f7f7;
-      --primaryText: #111113;
-      --danger: #ef4444;
-      width: min(100%, 560px);
-      height: min(760px, 100%);
+      --bg: #08090c;
+      --panel: #12141a;
+      --panel-2: #1a1d25;
+      --text: #f7f8fb;
+      --muted: #8d94a3;
+      --border: #2a2f39;
+      --accent: #ff671f;
+      --accent-soft: rgba(255, 103, 31, .14);
+      width: min(100%, 880px);
+      height: min(840px, 100%);
       min-height: 0;
-      max-height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 24px;
       overflow: hidden;
-      box-shadow: 0 20px 70px rgba(0,0,0,.35);
-      transition: background .18s ease, color .18s ease, border-color .18s ease;
+      border: 1px solid var(--border);
+      border-radius: clamp(0px, 3vw, 26px);
+      background:
+        radial-gradient(circle at 50% -15%, var(--accent-soft), transparent 38%),
+        var(--bg);
+      color: var(--text);
+      box-shadow: 0 24px 90px rgba(0,0,0,.48);
     }
     #app[data-theme="white"] {
-      --bg: #f7f7f7;
-      --panel: #ffffff;
-      --panel-2: #eeeeF1;
-      --text: #111113;
-      --muted: #707078;
-      --border: #d7d7dc;
-      --primary: #111113;
-      --primaryText: #ffffff;
+      --bg: #f3f5f8;
+      --panel: #fff;
+      --panel-2: #e7eaf0;
+      --text: #11151c;
+      --muted: #687080;
+      --border: #ccd2dc;
+      --accent-soft: rgba(255, 103, 31, .1);
       color-scheme: light;
     }
-
     .screen {
       width: 100%;
       height: 100%;
       min-height: 0;
       overflow: hidden;
       padding:
-        max(clamp(10px, 2.5dvh, 20px), env(safe-area-inset-top))
-        max(clamp(12px, 2.3dvh, 18px), env(safe-area-inset-right))
-        max(clamp(10px, 2.5dvh, 20px), env(safe-area-inset-bottom))
-        max(clamp(12px, 2.3dvh, 18px), env(safe-area-inset-left));
+        max(clamp(12px, 2.5dvh, 24px), env(safe-area-inset-top))
+        max(clamp(12px, 2.5vw, 24px), env(safe-area-inset-right))
+        max(clamp(12px, 2.5dvh, 24px), env(safe-area-inset-bottom))
+        max(clamp(12px, 2.5vw, 24px), env(safe-area-inset-left));
     }
     .hidden { display: none !important; }
-    .muted { color: var(--muted); }
-
-    .title-screen, .result-screen {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: clamp(16px, 4dvh, 30px);
-      text-align: center;
-      position: relative;
-    }
-    .brand {
-      margin: 0;
-      font-size: clamp(2rem, 8vw, 3.3rem);
-      line-height: 1;
-      letter-spacing: .14em;
+    .theme-btn, .back-btn, .start-btn {
+      border: 0;
+      cursor: pointer;
       font-weight: 950;
     }
-    .theme-btn {
-      position: absolute;
-      top: max(18px, env(safe-area-inset-top));
-      right: max(18px, env(safe-area-inset-right));
-      min-height: clamp(36px, 5dvh, 42px);
+    .theme-btn, .back-btn {
+      min-height: 40px;
       padding: 0 14px;
       border: 1px solid var(--border);
       border-radius: 999px;
       background: var(--panel);
       color: var(--text);
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: .12em;
-      cursor: pointer;
+      font-size: 11px;
+      letter-spacing: .1em;
     }
-    .primary-btn, .secondary-btn, .exit-btn, .key {
-      border: 0;
-      cursor: pointer;
-    }
-    .primary-btn {
-      min-height: clamp(46px, 6.5dvh, 54px);
-      padding: 0 38px;
-      border-radius: 14px;
-      background: var(--primary);
-      color: var(--primaryText);
-      font-weight: 950;
-      letter-spacing: .08em;
-    }
-    .secondary-btn {
-      min-height: clamp(44px, 6.2dvh, 52px);
-      padding: 0 28px;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: transparent;
-      color: var(--text);
-      font-weight: 900;
-    }
-    .primary-btn:active, .secondary-btn:active, .theme-btn:active, .exit-btn:active, .key:active {
-      transform: translateY(1px) scale(.99);
-    }
+    button:active, a:active { transform: translateY(1px) scale(.99); }
 
-    .game-screen {
+    .title-screen {
+      position: relative;
       display: flex;
       flex-direction: column;
-      gap: clamp(10px, 2.8dvh, 26px);
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: clamp(15px, 3.5dvh, 30px);
     }
-    .top-row {
+    .title-screen .theme-btn {
+      position: absolute;
+      top: max(4px, env(safe-area-inset-top));
+      right: max(4px, env(safe-area-inset-right));
+    }
+    .system-label {
+      margin: 0;
+      color: var(--accent);
+      font-size: clamp(.68rem, 2.2vw, .8rem);
+      font-weight: 950;
+      letter-spacing: .34em;
+    }
+    .brand {
+      margin: 0;
+      font-size: clamp(4rem, 18vw, 8.5rem);
+      line-height: .8;
+      font-weight: 1000;
+      letter-spacing: -.07em;
+    }
+    .brand-mark { color: var(--accent); }
+    .tagline {
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(.75rem, 2.7vw, .95rem);
+      font-weight: 850;
+      letter-spacing: .12em;
+    }
+    .start-btn {
+      min-width: 190px;
+      min-height: 55px;
+      margin-top: clamp(5px, 2dvh, 18px);
+      padding: 0 34px;
+      border-radius: 15px;
+      background: var(--accent);
+      color: #fff;
+      letter-spacing: .16em;
+      box-shadow: 0 12px 34px rgba(255,103,31,.27);
+    }
+    .version {
+      position: absolute;
+      bottom: max(4px, env(safe-area-inset-bottom));
+      margin: 0;
+      color: var(--muted);
+      font-size: .64rem;
+      font-weight: 800;
+      letter-spacing: .12em;
+    }
+
+    .select-screen {
+      display: flex;
+      flex-direction: column;
+      gap: clamp(9px, 1.8dvh, 16px);
+    }
+    .menu-header {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 10px;
+    }
+    .menu-header .back-btn { justify-self: start; }
+    .menu-header .theme-btn { justify-self: end; }
+    .menu-logo {
+      font-size: clamp(.9rem, 3.5vw, 1.15rem);
+      font-weight: 1000;
+      letter-spacing: -.02em;
+      white-space: nowrap;
+    }
+    .menu-logo span { color: var(--accent); }
+    .select-heading {
+      margin: 0;
+      font-size: clamp(1.45rem, 5.5vw, 2.2rem);
+      line-height: 1;
+      font-weight: 1000;
+      letter-spacing: .04em;
+    }
+    .select-subtitle {
+      margin: -3px 0 0;
+      color: var(--muted);
+      font-size: clamp(.68rem, 2.5vw, .82rem);
+    }
+    .games {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+      gap: clamp(8px, 1.5vw, 13px);
+    }
+    .game-card {
+      min-width: 0;
+      min-height: 0;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+      overflow: hidden;
+      padding: clamp(12px, 2.4vw, 22px);
+      border: 1px solid var(--border);
+      border-radius: clamp(14px, 2.5vw, 20px);
+      background: linear-gradient(145deg, color-mix(in srgb, var(--panel) 92%, var(--card-color)), var(--panel));
+      color: var(--text);
+      text-decoration: none;
+      cursor: pointer;
+      isolation: isolate;
+      transition: border-color .14s ease, transform .14s ease;
+    }
+    .game-card::after {
+      content: attr(data-number);
+      position: absolute;
+      right: clamp(8px, 2vw, 18px);
+      bottom: clamp(-16px, -2vw, -7px);
+      z-index: -1;
+      color: color-mix(in srgb, var(--card-color) 16%, transparent);
+      font-size: clamp(5rem, 16vw, 9rem);
+      line-height: 1;
+      font-weight: 1000;
+    }
+    .game-card:hover:not(.disabled) { border-color: var(--card-color); transform: translateY(-2px); }
+    .game-card.disabled { opacity: .5; cursor: default; }
+    .card-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      gap: 10px;
     }
-    .exit-btn {
-      min-height: clamp(36px, 5dvh, 42px);
-      padding: 0 15px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: var(--panel);
-      color: var(--text);
-      font-weight: 900;
+    .location {
+      color: var(--card-color);
+      font-size: clamp(.63rem, 2.2vw, .75rem);
+      font-weight: 950;
+      letter-spacing: .16em;
+    }
+    .status {
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--card-color) 14%, transparent);
+      color: var(--card-color);
+      font-size: clamp(.55rem, 1.8vw, .66rem);
+      font-weight: 950;
       letter-spacing: .08em;
     }
-    .time-wrap {
-      flex: 1;
-      display: flex;
-      align-items: baseline;
-      justify-content: flex-end;
-      gap: 8px;
-      font-variant-numeric: tabular-nums;
+    .game-name {
+      margin: auto 0 0;
+      font-size: clamp(1.25rem, 4.8vw, 2rem);
+      line-height: .95;
+      font-weight: 1000;
+      letter-spacing: -.02em;
     }
-    .time {
-      font-size: 1.4rem;
-      font-weight: 950;
-    }
-    .timer-track {
-      width: 100%;
-      height: clamp(8px, 1.3dvh, 12px);
-      border-radius: 999px;
-      overflow: hidden;
-      background: var(--border);
-    }
-    .timer-fill {
-      height: 100%;
-      width: 100%;
-      background: var(--primary);
-      transition: width .09s linear;
-    }
-
-    .code-area {
-      margin-top: clamp(0px, 1.8dvh, 18px);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: clamp(8px, 1.5dvh, 14px);
-    }
-    .code-slots {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      width: min(100%, 360px);
-      gap: clamp(6px, 1.2dvh, 10px);
-    }
-    .slot-wrap { min-width: 0; }
-    .slot {
-      width: 100%;
-      aspect-ratio: 1 / 1.06;
-      display: grid;
-      place-items: center;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: var(--panel);
-      font-size: clamp(1.8rem, 9vw, 2.55rem);
-      font-weight: 950;
-      font-variant-numeric: tabular-nums;
-    }
-    .judge-bar {
-      height: 7px;
-      margin-top: clamp(5px, 1dvh, 8px);
-      border-radius: 999px;
-      background: var(--border);
-      transform-origin: center;
-      transition: background .12s ease, transform .12s ease;
-    }
-    .judge-bar.reveal { transform: scaleX(1.07); }
-    .judge-bar.green { background: #22c55e; }
-    .judge-bar.yellow { background: #eab308; }
-    .judge-bar.red { background: #ef4444; }
-    .message {
-      min-height: 24px;
-      font-size: .9rem;
-      text-align: center;
+    .game-description {
+      margin: 4px 0 0;
       color: var(--muted);
+      font-size: clamp(.65rem, 2.3vw, .8rem);
+      line-height: 1.35;
+    }
+    .launch {
+      align-self: flex-end;
+      color: var(--card-color);
+      font-size: clamp(.64rem, 2.1vw, .75rem);
+      font-weight: 950;
+      letter-spacing: .12em;
     }
 
-    .keypad {
-      margin-top: auto;
-      width: min(100%, 430px);
-      align-self: center;
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: clamp(6px, 1.2dvh, 10px);
-    }
-    .key {
-      height: clamp(42px, 7.2dvh, 58px);
-      min-height: 0;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: var(--panel);
-      color: var(--text);
-      font-size: 1.25rem;
-      font-weight: 950;
-    }
-    .key.utility {
-      grid-column: span 2;
-      font-size: .9rem;
-      letter-spacing: .04em;
-    }
-    .key.enter {
-      grid-column: span 3;
-      background: var(--primary);
-      color: var(--primaryText);
-    }
-    .key:disabled {
-      opacity: .45;
-      cursor: default;
-    }
-
-    .result-title {
-      margin: 0;
-      font-size: clamp(2rem, 8vw, 3rem);
-      font-weight: 950;
-      letter-spacing: .1em;
-    }
-    .result-card {
-      width: min(100%, 370px);
-      padding: clamp(14px, 3dvh, 24px);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      background: var(--panel);
-      text-align: left;
-    }
-    .result-code {
-      margin: 8px 0 clamp(14px, 3dvh, 24px);
-      text-align: center;
-      font-size: 2.5rem;
-      font-weight: 950;
-      letter-spacing: .24em;
-      text-indent: .24em;
-      font-variant-numeric: tabular-nums;
-    }
-    .result-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
-    }
-    .result-value { margin-top: 4px; font-weight: 900; }
-    .result-actions {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 12px;
-    }
-
-    @media (max-width: 520px) {
-      body {
-        --page-pad: 0px;
-        background: var(--bg);
+    @media (max-width: 560px) {
+      body { padding: 0; }
+      #app { width: 100%; height: 100%; border: 0; border-radius: 0; }
+      .games {
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(3, minmax(0, 1fr));
       }
-      #app {
-        width: 100%;
-        height: 100%;
-        min-height: 0;
-        max-height: 100%;
-        border-radius: 0;
-        border-left: 0;
-        border-right: 0;
-      }
+      .game-card { flex-direction: row; align-items: center; }
+      .game-card > div:nth-child(2) { flex: 1; }
+      .game-name { margin-top: 0; }
+      .launch { align-self: center; white-space: nowrap; }
+      .game-card::after { font-size: clamp(4rem, 24vw, 7rem); }
     }
-
-    @media (max-height: 560px) {
-      .brand { font-size: clamp(1.65rem, 7vw, 2.4rem); }
-      .slot { font-size: clamp(1.45rem, 7dvh, 2rem); }
-      .message { min-height: 18px; font-size: .8rem; }
-      .key { height: clamp(36px, 7dvh, 42px); }
-      .key.utility { font-size: .78rem; }
-      .result-title { font-size: clamp(1.55rem, 7dvh, 2rem); }
-      .result-code { font-size: clamp(1.8rem, 8dvh, 2.5rem); }
+    @media (max-height: 610px) {
+      .select-screen { gap: 6px; }
+      .select-subtitle { display: none; }
+      .game-card { padding: 9px 12px; gap: 5px; }
+      .game-description { display: none; }
+      .card-top { display: block; }
+      .status { display: inline-block; margin-left: 5px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition-duration: .001ms !important; }
     }
   </style>
 </head>
 <body>
   <main id="app" data-theme="black">
     <section id="titleScreen" class="screen title-screen">
-      <button id="themeBtn" class="theme-btn" type="button" aria-label="WHITEテーマに切り替え">BLACK</button>
-      <h1 class="brand">CODE CRACKER</h1>
-      <button id="startBtn" class="primary-btn" type="button">START</button>
+      <button class="theme-btn" type="button" data-theme-toggle>WHITE</button>
+      <p class="system-label">MINIGAME TRAINING SYSTEM</p>
+      <h1 class="brand"><span class="brand-mark">P</span>-Tech</h1>
+      <p class="tagline">PRACTICE. REPEAT. COMPLETE.</p>
+      <button id="enterButton" class="start-btn" type="button">ENTER</button>
+      <p class="version">TRAINING TERMINAL v1.0</p>
     </section>
 
-    <section id="gameScreen" class="screen game-screen hidden" aria-label="ゲーム画面">
-      <div class="top-row">
-        <button id="exitBtn" class="exit-btn" type="button">EXIT</button>
-        <div class="time-wrap">
-          <span class="muted">TIME</span>
-          <span id="timeText" class="time">60.0</span>
+    <section id="selectScreen" class="screen select-screen hidden">
+      <header class="menu-header">
+        <button id="backButton" class="back-btn" type="button">← TITLE</button>
+        <div class="menu-logo"><span>P</span>-Tech</div>
+        <button class="theme-btn" type="button" data-theme-toggle>WHITE</button>
+      </header>
+      <h2 class="select-heading">SELECT GAME</h2>
+      <p class="select-subtitle">練習するギミックを選択してください</p>
+
+      <div class="games">
+        <a class="game-card" style="--card-color:#55c7ff" data-number="01" href="games/code-cracker/">
+          <div class="card-top"><span class="location">ATM</span><span class="status">PLAYABLE</span></div>
+          <div><h3 class="game-name">CODE<br />CRACKER</h3><p class="game-description">4桁のコードを解析する数字推理ギミック</p></div>
+          <span class="launch">START →</span>
+        </a>
+
+        <a class="game-card" style="--card-color:#ff671f" data-number="02" href="games/chain-braker/">
+          <div class="card-top"><span class="location">OIL RIG</span><span class="status">PLAYABLE</span></div>
+          <div><h3 class="game-name">CHAIN<br />BRAKER</h3><p class="game-description">同色ブロックをつなげて全消去するギミック</p></div>
+          <span class="launch">START →</span>
+        </a>
+
+        <div class="game-card disabled" style="--card-color:#a982ff" data-number="03" aria-disabled="true">
+          <div class="card-top"><span class="location">OIL RIG</span><span class="status">COMING SOON</span></div>
+          <div><h3 class="game-name">JUMPING<br />MAZE</h3><p class="game-description">次に追加予定のオイルリグ用ギミック</p></div>
+          <span class="launch">LOCKED</span>
         </div>
-      </div>
-
-      <div class="timer-track" aria-label="残り時間">
-        <div id="timerFill" class="timer-fill"></div>
-      </div>
-
-      <div class="code-area">
-        <div id="codeSlots" class="code-slots" aria-label="入力中の4桁コード">
-          <div class="slot-wrap"><div class="slot"></div><div class="judge-bar"></div></div>
-          <div class="slot-wrap"><div class="slot"></div><div class="judge-bar"></div></div>
-          <div class="slot-wrap"><div class="slot"></div><div class="judge-bar"></div></div>
-          <div class="slot-wrap"><div class="slot"></div><div class="judge-bar"></div></div>
-        </div>
-        <div id="message" class="message" aria-live="polite"></div>
-      </div>
-
-      <div id="keypad" class="keypad" aria-label="数字テンキー">
-        <button class="key" type="button" data-digit="1">1</button>
-        <button class="key" type="button" data-digit="2">2</button>
-        <button class="key" type="button" data-digit="3">3</button>
-        <button class="key" type="button" data-digit="4">4</button>
-        <button class="key" type="button" data-digit="5">5</button>
-        <button class="key" type="button" data-digit="6">6</button>
-        <button class="key" type="button" data-digit="7">7</button>
-        <button class="key" type="button" data-digit="8">8</button>
-        <button class="key" type="button" data-digit="9">9</button>
-        <button class="key" type="button" data-digit="0">0</button>
-        <button id="deleteBtn" class="key utility" type="button">DELETE</button>
-        <button id="enterBtn" class="key utility enter" type="button">ENTER</button>
-      </div>
-    </section>
-
-    <section id="resultScreen" class="screen result-screen hidden">
-      <h2 id="resultTitle" class="result-title">CODE CRACKED</h2>
-      <div class="result-card">
-        <div class="muted">CODE</div>
-        <div id="resultCode" class="result-code">0000</div>
-        <div class="result-grid">
-          <div>
-            <div class="muted">TIME</div>
-            <div id="resultTime" class="result-value">0.00s</div>
-          </div>
-          <div>
-            <div class="muted">TRIES</div>
-            <div id="resultTries" class="result-value">0</div>
-          </div>
-        </div>
-      </div>
-      <div class="result-actions">
-        <button id="retryBtn" class="primary-btn" type="button">RETRY</button>
-        <button id="titleBtn" class="secondary-btn" type="button">TITLE</button>
       </div>
     </section>
   </main>
 
   <script>
     (() => {
-      const LIMIT_SECONDS = 60;
-      const REVEAL_STEP_MS = 250;
-      const RESULT_HOLD_MS = 600;
-
-      function syncViewportHeight() {
-        const height = window.visualViewport?.height || window.innerHeight;
-        document.documentElement.style.setProperty('--viewport-height', `${height}px`);
-      }
-
-      syncViewportHeight();
-      window.addEventListener('resize', syncViewportHeight, { passive: true });
-      window.addEventListener('orientationchange', syncViewportHeight, { passive: true });
-      window.visualViewport?.addEventListener('resize', syncViewportHeight, { passive: true });
-      window.visualViewport?.addEventListener('scroll', syncViewportHeight, { passive: true });
-
+      'use strict';
       const app = document.getElementById('app');
       const titleScreen = document.getElementById('titleScreen');
-      const gameScreen = document.getElementById('gameScreen');
-      const resultScreen = document.getElementById('resultScreen');
-      const themeBtn = document.getElementById('themeBtn');
-      const startBtn = document.getElementById('startBtn');
-      const exitBtn = document.getElementById('exitBtn');
-      const retryBtn = document.getElementById('retryBtn');
-      const titleBtn = document.getElementById('titleBtn');
-      const timeText = document.getElementById('timeText');
-      const timerFill = document.getElementById('timerFill');
-      const message = document.getElementById('message');
-      const slotEls = [...document.querySelectorAll('.slot')];
-      const barEls = [...document.querySelectorAll('.judge-bar')];
-      const digitButtons = [...document.querySelectorAll('[data-digit]')];
-      const deleteBtn = document.getElementById('deleteBtn');
-      const enterBtn = document.getElementById('enterBtn');
-      const resultTitle = document.getElementById('resultTitle');
-      const resultCode = document.getElementById('resultCode');
-      const resultTime = document.getElementById('resultTime');
-      const resultTries = document.getElementById('resultTries');
+      const selectScreen = document.getElementById('selectScreen');
+      const themeButtons = document.querySelectorAll('[data-theme-toggle]');
 
-      let secret = '';
-      let current = [];
-      let tries = 0;
-      let startTime = 0;
-      let rafId = 0;
-      let active = false;
-      let evaluating = false;
-      let audioContext = null;
+      const updateViewportHeight = () => {
+        const height = window.visualViewport?.height || window.innerHeight;
+        document.documentElement.style.setProperty('--viewport-height', `${height}px`);
+      };
 
-      const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+      const setTheme = (theme) => {
+        const white = theme === 'white';
+        app.dataset.theme = white ? 'white' : 'black';
+        themeButtons.forEach((button) => button.textContent = white ? 'BLACK' : 'WHITE');
+        document.querySelector('meta[name="theme-color"]').content = white ? '#f3f5f8' : '#08090c';
+        try { localStorage.setItem('ptech-theme', app.dataset.theme); } catch (_) {}
+      };
 
-      function showScreen(target) {
-        [titleScreen, gameScreen, resultScreen].forEach(screen => screen.classList.add('hidden'));
-        target.classList.remove('hidden');
-      }
+      const show = (screen) => {
+        titleScreen.classList.toggle('hidden', screen !== titleScreen);
+        selectScreen.classList.toggle('hidden', screen !== selectScreen);
+      };
 
-      function setTheme(theme) {
-        app.dataset.theme = theme;
-        const isBlack = theme === 'black';
-        themeBtn.textContent = isBlack ? 'BLACK' : 'WHITE';
-        themeBtn.setAttribute('aria-label', isBlack ? 'WHITEテーマに切り替え' : 'BLACKテーマに切り替え');
-        document.querySelector('meta[name="theme-color"]').setAttribute('content', isBlack ? '#0b0b0c' : '#f7f7f7');
-      }
-
-      function generateSecret() {
-        const digits = '0123456789'.split('');
-        for (let i = digits.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [digits[i], digits[j]] = [digits[j], digits[i]];
-        }
-        return digits.slice(0, 4).join('');
-      }
-
-      function clearJudgement() {
-        barEls.forEach(bar => { bar.className = 'judge-bar'; });
-      }
-
-      function renderCurrent() {
-        slotEls.forEach((slot, index) => { slot.textContent = current[index] ?? ''; });
-        digitButtons.forEach(btn => {
-          const digit = btn.dataset.digit;
-          btn.disabled = evaluating || current.includes(digit) || current.length >= 4;
-        });
-        deleteBtn.disabled = evaluating || current.length === 0;
-        enterBtn.disabled = evaluating || current.length !== 4;
-      }
-
-      function resetRound() {
-        current = [];
-        evaluating = false;
-        message.textContent = '';
-        clearJudgement();
-        renderCurrent();
-      }
-
-      function lockControls() {
-        evaluating = true;
-        renderCurrent();
-      }
-
-      function startGame() {
-        cancelAnimationFrame(rafId);
-        secret = generateSecret();
-        tries = 0;
-        startTime = performance.now();
-        active = true;
-        evaluating = false;
-        timeText.textContent = LIMIT_SECONDS.toFixed(1);
-        timerFill.style.width = '100%';
-        showScreen(gameScreen);
-        resetRound();
-        rafId = requestAnimationFrame(tick);
-      }
-
-      function tick(now) {
-        if (!active) return;
-        const elapsed = (now - startTime) / 1000;
-        const remaining = Math.max(0, LIMIT_SECONDS - elapsed);
-        timeText.textContent = remaining.toFixed(1);
-        timerFill.style.width = `${(remaining / LIMIT_SECONDS) * 100}%`;
-
-        if (remaining <= 0) {
-          finish(false, LIMIT_SECONDS);
-          return;
-        }
-        rafId = requestAnimationFrame(tick);
-      }
-
-      function addDigit(digit) {
-        if (!active || evaluating || current.length >= 4) return;
-        if (current.includes(digit)) {
-          message.textContent = '同じ数字は使えません';
-          return;
-        }
-        current.push(digit);
-        message.textContent = '';
-        renderCurrent();
-      }
-
-      function removeDigit() {
-        if (!active || evaluating || current.length === 0) return;
-        current.pop();
-        message.textContent = '';
-        renderCurrent();
-      }
-
-      function evaluateGuess(guess) {
-        return guess.split('').map((digit, index) => {
-          if (digit === secret[index]) return 'green';
-          if (secret.includes(digit)) return 'yellow';
-          return 'red';
-        });
-      }
-
-      function beep(index) {
-        try {
-          const AudioCtx = window.AudioContext || window.webkitAudioContext;
-          if (!AudioCtx) return;
-          if (!audioContext) audioContext = new AudioCtx();
-          const osc = audioContext.createOscillator();
-          const gain = audioContext.createGain();
-          osc.frequency.value = 600 + index * 35;
-          gain.gain.setValueAtTime(0.04, audioContext.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.07);
-          osc.connect(gain);
-          gain.connect(audioContext.destination);
-          osc.start();
-          osc.stop(audioContext.currentTime + 0.075);
-        } catch (_) {}
-      }
-
-      async function reveal(result) {
-        for (let i = 0; i < result.length; i++) {
-          if (!active) return false;
-          barEls[i].className = `judge-bar ${result[i]} reveal`;
-          beep(i);
-          await sleep(100);
-          barEls[i].classList.remove('reveal');
-          if (i < result.length - 1) await sleep(REVEAL_STEP_MS - 100);
-        }
-        return active;
-      }
-
-      async function submitGuess() {
-        if (!active || evaluating) return;
-        if (current.length !== 4) {
-          message.textContent = '数字を4桁入力してください';
-          return;
-        }
-
-        const guess = current.join('');
-        tries += 1;
-        lockControls();
-        message.textContent = '';
-
-        const result = evaluateGuess(guess);
-        const completed = await reveal(result);
-        if (!completed || !active) return;
-
-        if (guess === secret) {
-          await sleep(350);
-          if (!active) return;
-          const elapsed = Math.min(LIMIT_SECONDS, (performance.now() - startTime) / 1000);
-          finish(true, elapsed);
-          return;
-        }
-
-        await sleep(RESULT_HOLD_MS);
-        if (active) resetRound();
-      }
-
-      function finish(success, elapsed) {
-        if (!active && resultScreen.classList.contains('hidden') === false) return;
-        active = false;
-        evaluating = false;
-        cancelAnimationFrame(rafId);
-        resultTitle.textContent = success ? 'CODE CRACKED' : 'TIME UP';
-        resultCode.textContent = secret;
-        resultTime.textContent = `${elapsed.toFixed(2)}s`;
-        resultTries.textContent = String(tries);
-        showScreen(resultScreen);
-      }
-
-      function exitToTitle() {
-        active = false;
-        evaluating = false;
-        cancelAnimationFrame(rafId);
-        current = [];
-        showScreen(titleScreen);
-      }
-
-      themeBtn.addEventListener('click', () => {
-        setTheme(app.dataset.theme === 'black' ? 'white' : 'black');
+      document.getElementById('enterButton').addEventListener('click', () => show(selectScreen));
+      document.getElementById('backButton').addEventListener('click', () => show(titleScreen));
+      themeButtons.forEach((button) => button.addEventListener('click', () => setTheme(app.dataset.theme === 'white' ? 'black' : 'white')));
+      document.addEventListener('keydown', (event) => {
+        if ((event.key === 'Enter' || event.key === ' ') && !titleScreen.classList.contains('hidden')) show(selectScreen);
+        if (event.key === 'Escape' && !selectScreen.classList.contains('hidden')) show(titleScreen);
       });
-      startBtn.addEventListener('click', startGame);
-      retryBtn.addEventListener('click', startGame);
-      titleBtn.addEventListener('click', exitToTitle);
-      exitBtn.addEventListener('click', exitToTitle);
-      digitButtons.forEach(btn => btn.addEventListener('click', () => addDigit(btn.dataset.digit)));
-      deleteBtn.addEventListener('click', removeDigit);
-      enterBtn.addEventListener('click', submitGuess);
-
-      window.addEventListener('keydown', event => {
-        if (!active || gameScreen.classList.contains('hidden')) return;
-
-        if (/^[0-9]$/.test(event.key)) {
-          event.preventDefault();
-          addDigit(event.key);
-          return;
-        }
-        if (event.key === 'Backspace' || event.key === 'Delete') {
-          event.preventDefault();
-          removeDigit();
-          return;
-        }
-        if (event.key === 'Enter') {
-          event.preventDefault();
-          submitGuess();
-        }
-      });
-
-      setTheme('black');
-      showScreen(titleScreen);
+      window.addEventListener('resize', updateViewportHeight);
+      window.visualViewport?.addEventListener('resize', updateViewportHeight);
+      updateViewportHeight();
+      let storedTheme = 'black';
+      try { storedTheme = localStorage.getItem('ptech-theme') || 'black'; } catch (_) {}
+      setTheme(storedTheme);
     })();
   </script>
 </body>

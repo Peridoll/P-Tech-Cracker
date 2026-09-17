@@ -1,4 +1,4 @@
-name: Deploy CODE CRACKER to GitHub Pages
+name: Deploy P-Tech to GitHub Pages
 
 on:
   push:

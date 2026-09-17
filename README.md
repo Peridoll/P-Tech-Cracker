@@ -1,22 +1,37 @@
-# CODE CRACKER
+# P-Tech
 
-4桁の数字コードを60秒以内に当てる、スマホ対応の短時間ミニゲームです。
+GTA FiveMの犯罪ギミックを練習するための、スマートフォン対応ミニゲーム集です。
 
-## Play
+トップ画面からゲーム選択へ進み、練習したいギミックを起動できます。各ゲームは独立しているため、今後も同じアプリと公開URLの中へ追加できます。
 
-`index.html` をブラウザで開くだけで遊べます。外部ライブラリやビルド作業は不要です。
+## Games
 
-## Current version
+### P-Tech: CodeCracker
 
-- 数字4桁専用
-- 同じ数字の重複なし
+- 対象: ATM強盗
+- 4桁の数字コードを推理
 - 60秒制限
-- 判定履歴なし
-- 緑 / 黄 / 赤の4連続判定演出
-- スマホ用画面内テンキー
-- `DELETE` / `ENTER`
-- ゲーム中の `EXIT`
-- BLACK / WHITEテーマ切替
-- PCキーボード対応
 
-詳しい仕様は [`SPEC.md`](./SPEC.md) を参照してください。
+### P-Tech: ChainBraker
+
+- 対象: オイルリグ強盗
+- 11列 × 8行、赤 / 緑 / 青の3色
+- 同色グループを消去
+- 下詰め後に左詰め
+- 30秒制限
+
+### P-Tech: JumpingMaze
+
+- 対象: オイルリグ強盗
+- 今後追加予定
+
+## Structure
+
+```text
+index.html                  P-Techタイトル / ゲーム選択
+games/
+  code-cracker/             CodeCracker本体と仕様
+  chain-braker/             ChainBraker本体と仕様
+```
+
+外部ライブラリとビルド作業は不要です。
