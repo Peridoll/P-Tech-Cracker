@@ -343,7 +343,7 @@
       <button id="themeButton" class="theme-btn" type="button" aria-label="テーマを切り替える">WHITE</button>
       <p class="eyebrow">P-TECH</p>
       <h1 class="brand">JUMPING<span>MAZE</span></h1>
-      <p class="lead">数字を記憶し、表示された数だけ上下左右へジャンプ。<br />左上から右下までたどれば解除成功。</p>
+      <p class="lead">数字を記憶し、表示された数だけ右か下へジャンプ。<br />左上から右下までたどれば解除成功。</p>
       <button id="startButton" class="primary-btn" type="button">START</button>
     </section>
 
@@ -523,9 +523,9 @@
         const row = Number(cell.dataset.row);
         const col = Number(cell.dataset.col);
         const jump = values[currentRow][currentCol];
-        const distance = Math.abs(row - currentRow) + Math.abs(col - currentCol);
-        const sameAxis = row === currentRow || col === currentCol;
-        if (sameAxis && distance === jump) {
+        const movesRight = row === currentRow && col - currentCol === jump;
+        const movesDown = col === currentCol && row - currentRow === jump;
+        if (movesRight || movesDown) {
           currentRow = row;
           currentCol = col;
           reachedCount++;
