@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0b0c" />
+  <title>CODE CRACKER</title>
+  <style>
+    :root {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color-scheme: dark;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      min-height: 100dvh;
+      display: grid;
+      place-items: center;
+      background: #080809;
+      padding: 16px;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    button { font: inherit; touch-action: manipulation; }
+
+    #app {
+      --bg: #0b0b0c;
+      --panel: #161618;
+      --panel-2: #1d1d20;
+      --text: #f7f7f7;
+      --muted: #92929a;
+      --border: #34343a;
+      --primary: #f7f7f7;
+      --primaryText: #111113;
+      --danger: #ef4444;
+      width: min(100%, 560px);
+      min-height: min(760px, calc(100dvh - 32px));
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 20px 70px rgba(0,0,0,.35);
+      transition: background .18s ease, color .18s ease, border-color .18s ease;
+    }
+    #app[data-theme="white"] {
+      --bg: #f7f7f7;
+      --panel: #ffffff;
+      --panel-2: #eeeeF1;
+      --text: #111113;
+      --muted: #707078;
+      --border: #d7d7dc;
+      --primary: #111113;
+      --primaryText: #ffffff;
+      color-scheme: light;
+    }
+
+    .screen {
+      min-height: min(760px, calc(100dvh - 32px));
+      padding: max(20px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+    }
+    .hidden { display: none !important; }
+    .muted { color: var(--muted); }
+
+    .title-screen, .result-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 30px;
+      text-align: center;
+      position: relative;
+    }
+    .brand {
+      margin: 0;
+      font-size: clamp(2rem, 8vw, 3.3rem);
+      line-height: 1;
+      letter-spacing: .14em;
+      font-weight: 950;
+    }
+    .theme-btn {
+      position: absolute;
+      top: max(18px, env(safe-area-inset-top));
+      right: max(18px, env(safe-area-inset-right));
+      min-height: 42px;
+      padding: 0 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .12em;
+      cursor: pointer;
+    }
+    .primary-btn, .secondary-btn, .exit-btn, .key {
+      border: 0;
+      cursor: pointer;
+    }
+    .primary-btn {
+      min-height: 54px;
+      padding: 0 38px;
+      border-radius: 14px;
+      background: var(--primary);
+      color: var(--primaryText);
+      font-weight: 950;
+      letter-spacing: .08em;
+    }
+    .secondary-btn {
+      min-height: 52px;
+      padding: 0 28px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: transparent;
+      color: var(--text);
+      font-weight: 900;
+    }
+    .primary-btn:active, .secondary-btn:active, .theme-btn:active, .exit-btn:active, .key:active {
+      transform: translateY(1px) scale(.99);
+    }
+
+    .game-screen {
+      display: flex;
+      flex-direction: column;
+      gap: 26px;
+    }
+    .top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .exit-btn {
+      min-height: 42px;
+      padding: 0 15px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel);
+      color: var(--text);
+      font-weight: 900;
+      letter-spacing: .08em;
+    }
+    .time-wrap {
+      flex: 1;
+      display: flex;
+      align-items: baseline;
+      justify-content: flex-end;
+      gap: 8px;
+      font-variant-numeric: tabular-nums;
+    }
+    .time {
+      font-size: 1.4rem;
+      font-weight: 950;
+    }
+    .timer-track {
+      width: 100%;
+      height: 12px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: var(--border);
+    }
+    .timer-fill {
+      height: 100%;
+      width: 100%;
+      background: var(--primary);
+      transition: width .09s linear;
+    }
+
+    .code-area {
+      margin-top: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    .code-slots {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      width: min(100%, 360px);
+      gap: 10px;
+    }
+    .slot-wrap { min-width: 0; }
+    .slot {
+      width: 100%;
+      aspect-ratio: 1 / 1.06;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--panel);
+      font-size: clamp(1.8rem, 9vw, 2.55rem);
+      font-weight: 950;
+      font-variant-numeric: tabular-nums;
+    }
+    .judge-bar {
+      height: 7px;
+      margin-top: 8px;
+      border-radius: 999px;
+      background: var(--border);
+      transform-origin: center;
+      transition: background .12s ease, transform .12s ease;
+    }
+    .judge-bar.reveal { transform: scaleX(1.07); }
+    .judge-bar.green { background: #22c55e; }
+    .judge-bar.yellow { background: #eab308; }
+    .judge-bar.red { background: #ef4444; }
+    .message {
+      min-height: 24px;
+      font-size: .9rem;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .keypad {
+      margin-top: auto;
+      width: min(100%, 430px);
+      align-self: center;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+    .key {
+      min-height: 58px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--panel);
+      color: var(--text);
+      font-size: 1.25rem;
+      font-weight: 950;
+    }
+    .key.utility {
+      grid-column: span 2;
+      font-size: .9rem;
+      letter-spacing: .04em;
+    }
+    .key.enter {
+      grid-column: span 3;
+      background: var(--primary);
+      color: var(--primaryText);
+    }
+    .key:disabled {
+      opacity: .45;
+      cursor: default;
+    }
+
+    .result-title {
+      margin: 0;
+      font-size: clamp(2rem, 8vw, 3rem);
+      font-weight: 950;
+      letter-spacing: .1em;
+    }
+    .result-card {
+      width: min(100%, 370px);
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--panel);
+      text-align: left;
+    }
+    .result-code {
+      margin: 8px 0 24px;
+      text-align: center;
+      font-size: 2.5rem;
+      font-weight: 950;
+      letter-spacing: .24em;
+      text-indent: .24em;
+      font-variant-numeric: tabular-nums;
+    }
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    .result-value { margin-top: 4px; font-weight: 900; }
+    .result-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    @media (max-width: 520px) {
+      body { padding: 0; background: var(--bg); }
+      #app {
+        width: 100%;
+        min-height: 100dvh;
+        border-radius: 0;
+        border-left: 0;
+        border-right: 0;
+      }
+      .screen { min-height: 100dvh; }
+      .game-screen { gap: 22px; }
+      .keypad { gap: 8px; }
+      .key { min-height: 56px; }
+    }
+  </style>
+</head>
+<body>
+  <main id="app" data-theme="black">
+    <section id="titleScreen" class="screen title-screen">
+      <button id="themeBtn" class="theme-btn" type="button" aria-label="WHITEテーマに切り替え">BLACK</button>
+      <h1 class="brand">CODE CRACKER</h1>
+      <button id="startBtn" class="primary-btn" type="button">START</button>
+    </section>
+
+    <section id="gameScreen" class="screen game-screen hidden" aria-label="ゲーム画面">
+      <div class="top-row">
+        <button id="exitBtn" class="exit-btn" type="button">EXIT</button>
+        <div class="time-wrap">
+          <span class="muted">TIME</span>
+          <span id="timeText" class="time">60.0</span>
+        </div>
+      </div>
+
+      <div class="timer-track" aria-label="残り時間">
+        <div id="timerFill" class="timer-fill"></div>
+      </div>
+
+      <div class="code-area">
+        <div id="codeSlots" class="code-slots" aria-label="入力中の4桁コード">
+          <div class="slot-wrap"><div class="slot"></div><div class="judge-bar"></div></div>
+          <div class="slot-wrap"><div class="slot"></div><div class="judge-bar"></div></div>
+          <div class="slot-wrap"><div class="slot"></div><div class="judge-bar"></div></div>
+          <div class="slot-wrap"><div class="slot"></div><div class="judge-bar"></div></div>
+        </div>
+        <div id="message" class="message" aria-live="polite"></div>
+      </div>
+
+      <div id="keypad" class="keypad" aria-label="数字テンキー">
+        <button class="key" type="button" data-digit="1">1</button>
+        <button class="key" type="button" data-digit="2">2</button>
+        <button class="key" type="button" data-digit="3">3</button>
+        <button class="key" type="button" data-digit="4">4</button>
+        <button class="key" type="button" data-digit="5">5</button>
+        <button class="key" type="button" data-digit="6">6</button>
+        <button class="key" type="button" data-digit="7">7</button>
+        <button class="key" type="button" data-digit="8">8</button>
+        <button class="key" type="button" data-digit="9">9</button>
+        <button class="key" type="button" data-digit="0">0</button>
+        <button id="deleteBtn" class="key utility" type="button">DELETE</button>
+        <button id="enterBtn" class="key utility enter" type="button">ENTER</button>
+      </div>
+    </section>
+
+    <section id="resultScreen" class="screen result-screen hidden">
+      <h2 id="resultTitle" class="result-title">CODE CRACKED</h2>
+      <div class="result-card">
+        <div class="muted">CODE</div>
+        <div id="resultCode" class="result-code">0000</div>
+        <div class="result-grid">
+          <div>
+            <div class="muted">TIME</div>
+            <div id="resultTime" class="result-value">0.00s</div>
+          </div>
+          <div>
+            <div class="muted">TRIES</div>
+            <div id="resultTries" class="result-value">0</div>
+          </div>
+        </div>
+      </div>
+      <div class="result-actions">
+        <button id="retryBtn" class="primary-btn" type="button">RETRY</button>
+        <button id="titleBtn" class="secondary-btn" type="button">TITLE</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const LIMIT_SECONDS = 60;
+      const REVEAL_STEP_MS = 250;
+      const RESULT_HOLD_MS = 600;
+
+      const app = document.getElementById('app');
+      const titleScreen = document.getElementById('titleScreen');
+      const gameScreen = document.getElementById('gameScreen');
+      const resultScreen = document.getElementById('resultScreen');
+      const themeBtn = document.getElementById('themeBtn');
+      const startBtn = document.getElementById('startBtn');
+      const exitBtn = document.getElementById('exitBtn');
+      const retryBtn = document.getElementById('retryBtn');
+      const titleBtn = document.getElementById('titleBtn');
+      const timeText = document.getElementById('timeText');
+      const timerFill = document.getElementById('timerFill');
+      const message = document.getElementById('message');
+      const slotEls = [...document.querySelectorAll('.slot')];
+      const barEls = [...document.querySelectorAll('.judge-bar')];
+      const digitButtons = [...document.querySelectorAll('[data-digit]')];
+      const deleteBtn = document.getElementById('deleteBtn');
+      const enterBtn = document.getElementById('enterBtn');
+      const resultTitle = document.getElementById('resultTitle');
+      const resultCode = document.getElementById('resultCode');
+      const resultTime = document.getElementById('resultTime');
+      const resultTries = document.getElementById('resultTries');
+
+      let secret = '';
+      let current = [];
+      let tries = 0;
+      let startTime = 0;
+      let rafId = 0;
+      let active = false;
+      let evaluating = false;
+      let audioContext = null;
+
+      const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+      function showScreen(target) {
+        [titleScreen, gameScreen, resultScreen].forEach(screen => screen.classList.add('hidden'));
+        target.classList.remove('hidden');
+      }
+
+      function setTheme(theme) {
+        app.dataset.theme = theme;
+        const isBlack = theme === 'black';
+        themeBtn.textContent = isBlack ? 'BLACK' : 'WHITE';
+        themeBtn.setAttribute('aria-label', isBlack ? 'WHITEテーマに切り替え' : 'BLACKテーマに切り替え');
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', isBlack ? '#0b0b0c' : '#f7f7f7');
+      }
+
+      function generateSecret() {
+        const digits = '0123456789'.split('');
+        for (let i = digits.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [digits[i], digits[j]] = [digits[j], digits[i]];
+        }
+        return digits.slice(0, 4).join('');
+      }
+
+      function clearJudgement() {
+        barEls.forEach(bar => { bar.className = 'judge-bar'; });
+      }
+
+      function renderCurrent() {
+        slotEls.forEach((slot, index) => { slot.textContent = current[index] ?? ''; });
+        digitButtons.forEach(btn => {
+          const digit = btn.dataset.digit;
+          btn.disabled = evaluating || current.includes(digit) || current.length >= 4;
+        });
+        deleteBtn.disabled = evaluating || current.length === 0;
+        enterBtn.disabled = evaluating || current.length !== 4;
+      }
+
+      function resetRound() {
+        current = [];
+        evaluating = false;
+        message.textContent = '';
+        clearJudgement();
+        renderCurrent();
+      }
+
+      function lockControls() {
+        evaluating = true;
+        renderCurrent();
+      }
+
+      function startGame() {
+        cancelAnimationFrame(rafId);
+        secret = generateSecret();
+        tries = 0;
+        startTime = performance.now();
+        active = true;
+        evaluating = false;
+        timeText.textContent = LIMIT_SECONDS.toFixed(1);
+        timerFill.style.width = '100%';
+        showScreen(gameScreen);
+        resetRound();
+        rafId = requestAnimationFrame(tick);
+      }
+
+      function tick(now) {
+        if (!active) return;
+        const elapsed = (now - startTime) / 1000;
+        const remaining = Math.max(0, LIMIT_SECONDS - elapsed);
+        timeText.textContent = remaining.toFixed(1);
+        timerFill.style.width = `${(remaining / LIMIT_SECONDS) * 100}%`;
+
+        if (remaining <= 0) {
+          finish(false, LIMIT_SECONDS);
+          return;
+        }
+        rafId = requestAnimationFrame(tick);
+      }
+
+      function addDigit(digit) {
+        if (!active || evaluating || current.length >= 4) return;
+        if (current.includes(digit)) {
+          message.textContent = '同じ数字は使えません';
+          return;
+        }
+        current.push(digit);
+        message.textContent = '';
+        renderCurrent();
+      }
+
+      function removeDigit() {
+        if (!active || evaluating || current.length === 0) return;
+        current.pop();
+        message.textContent = '';
+        renderCurrent();
+      }
+
+      function evaluateGuess(guess) {
+        return guess.split('').map((digit, index) => {
+          if (digit === secret[index]) return 'green';
+          if (secret.includes(digit)) return 'yellow';
+          return 'red';
+        });
+      }
+
+      function beep(index) {
+        try {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (!AudioCtx) return;
+          if (!audioContext) audioContext = new AudioCtx();
+          const osc = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          osc.frequency.value = 600 + index * 35;
+          gain.gain.setValueAtTime(0.04, audioContext.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.07);
+          osc.connect(gain);
+          gain.connect(audioContext.destination);
+          osc.start();
+          osc.stop(audioContext.currentTime + 0.075);
+        } catch (_) {}
+      }
+
+      async function reveal(result) {
+        for (let i = 0; i < result.length; i++) {
+          if (!active) return false;
+          barEls[i].className = `judge-bar ${result[i]} reveal`;
+          beep(i);
+          await sleep(100);
+          barEls[i].classList.remove('reveal');
+          if (i < result.length - 1) await sleep(REVEAL_STEP_MS - 100);
+        }
+        return active;
+      }
+
+      async function submitGuess() {
+        if (!active || evaluating) return;
+        if (current.length !== 4) {
+          message.textContent = '数字を4桁入力してください';
+          return;
+        }
+
+        const guess = current.join('');
+        tries += 1;
+        lockControls();
+        message.textContent = '';
+
+        const result = evaluateGuess(guess);
+        const completed = await reveal(result);
+        if (!completed || !active) return;
+
+        if (guess === secret) {
+          await sleep(350);
+          if (!active) return;
+          const elapsed = Math.min(LIMIT_SECONDS, (performance.now() - startTime) / 1000);
+          finish(true, elapsed);
+          return;
+        }
+
+        await sleep(RESULT_HOLD_MS);
+        if (active) resetRound();
+      }
+
+      function finish(success, elapsed) {
+        if (!active && resultScreen.classList.contains('hidden') === false) return;
+        active = false;
+        evaluating = false;
+        cancelAnimationFrame(rafId);
+        resultTitle.textContent = success ? 'CODE CRACKED' : 'TIME UP';
+        resultCode.textContent = secret;
+        resultTime.textContent = `${elapsed.toFixed(2)}s`;
+        resultTries.textContent = String(tries);
+        showScreen(resultScreen);
+      }
+
+      function exitToTitle() {
+        active = false;
+        evaluating = false;
+        cancelAnimationFrame(rafId);
+        current = [];
+        showScreen(titleScreen);
+      }
+
+      themeBtn.addEventListener('click', () => {
+        setTheme(app.dataset.theme === 'black' ? 'white' : 'black');
+      });
+      startBtn.addEventListener('click', startGame);
+      retryBtn.addEventListener('click', startGame);
+      titleBtn.addEventListener('click', exitToTitle);
+      exitBtn.addEventListener('click', exitToTitle);
+      digitButtons.forEach(btn => btn.addEventListener('click', () => addDigit(btn.dataset.digit)));
+      deleteBtn.addEventListener('click', removeDigit);
+      enterBtn.addEventListener('click', submitGuess);
+
+      window.addEventListener('keydown', event => {
+        if (!active || gameScreen.classList.contains('hidden')) return;
+
+        if (/^[0-9]$/.test(event.key)) {
+          event.preventDefault();
+          addDigit(event.key);
+          return;
+        }
+        if (event.key === 'Backspace' || event.key === 'Delete') {
+          event.preventDefault();
+          removeDigit();
+          return;
+        }
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          submitGuess();
+        }
+      });
+
+      setTheme('black');
+      showScreen(titleScreen);
+    })();
+  </script>
+</body>
+</html>
