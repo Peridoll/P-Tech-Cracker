@@ -415,7 +415,7 @@
       const MAX_MISSES = 3;
       const TIME_LIMIT_MS = 30000;
       const CIRCUMFERENCE = 2 * Math.PI * 42;
-      const TARGET_WIDTHS = [60, 54, 48, 42, 36, 32, 28, 24];
+      const TARGET_WIDTHS = [84, 76, 68, 60, 54, 48, 42, 36];
       const app = document.getElementById('app');
       const titleScreen = document.getElementById('titleScreen');
       const gameScreen = document.getElementById('gameScreen');
@@ -437,7 +437,7 @@
       let needleAngle = 0;
       let targetCenter = 0;
       let targetWidth = TARGET_WIDTHS[0];
-      let speed = 90;
+      let speed = 78;
       let direction = 1;
       let phase = 'idle';
       let inputLocked = false;
@@ -493,7 +493,7 @@
         if (phase !== 'playing') return;
         targetWidth = TARGET_WIDTHS[stage - 1];
         targetCenter = Math.random() * 360;
-        speed = 90 + (stage - 1) * 18;
+        speed = 78 + (stage - 1) * 12;
         direction = Math.random() < .5 ? -1 : 1;
         if (angleDistance(needleAngle, targetCenter) < targetWidth / 2 + 35) targetCenter = normalizeAngle(targetCenter + 150);
         stageNeedleStart = needleAngle;
@@ -513,6 +513,9 @@
         const now = performance.now();
         if (phase !== 'playing' || inputLocked || now - lastInputAt < 170) return;
         lastInputAt = now;
+        needleAngle = normalizeAngle(stageNeedleStart + direction * speed * (now - stageStartedAt) / 1000);
+        needle.style.transform = `rotate(${needleAngle}deg)`;
+        dial.dataset.needleAngle = needleAngle.toFixed(3);
         const hit = angleDistance(needleAngle, targetCenter) <= targetWidth / 2;
         if (hit) {
           inputLocked = true;
