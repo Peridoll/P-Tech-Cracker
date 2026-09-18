@@ -513,9 +513,6 @@
         const now = performance.now();
         if (phase !== 'playing' || inputLocked || now - lastInputAt < 170) return;
         lastInputAt = now;
-        needleAngle = normalizeAngle(stageNeedleStart + direction * speed * (now - stageStartedAt) / 1000);
-        needle.style.transform = `rotate(${needleAngle}deg)`;
-        dial.dataset.needleAngle = needleAngle.toFixed(3);
         const hit = angleDistance(needleAngle, targetCenter) <= targetWidth / 2;
         if (hit) {
           inputLocked = true;
