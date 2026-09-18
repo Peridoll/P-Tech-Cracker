@@ -443,7 +443,8 @@
       let inputLocked = false;
       let lastInputAt = 0;
       let startedAt = 0;
-      let lastFrameAt = 0;
+      let stageStartedAt = 0;
+      let stageNeedleStart = 0;
       let animationFrame = 0;
       let transitionTimer = 0;
       let audioContext = null;
@@ -495,6 +496,8 @@
         speed = 90 + (stage - 1) * 18;
         direction = Math.random() < .5 ? -1 : 1;
         if (angleDistance(needleAngle, targetCenter) < targetWidth / 2 + 35) targetCenter = normalizeAngle(targetCenter + 150);
+        stageNeedleStart = needleAngle;
+        stageStartedAt = performance.now();
         inputLocked = false;
         instruction.textContent = '針が緑のエリアに入った瞬間にタップ';
         renderTarget();
@@ -535,9 +538,7 @@
       };
       const updateGame = (now) => {
         if (phase !== 'playing') return;
-        const delta = Math.min(50, now - lastFrameAt);
-        lastFrameAt = now;
-        needleAngle = normalizeAngle(needleAngle + direction * speed * delta / 1000);
+        needleAngle = normalizeAngle(stageNeedleStart + direction * speed * (now - stageStartedAt) / 1000);
         needle.style.transform = `rotate(${needleAngle}deg)`;
         dial.dataset.needleAngle = needleAngle.toFixed(3);
         const remaining = Math.max(0, TIME_LIMIT_MS - (now - startedAt));
@@ -561,7 +562,8 @@
         inputLocked = false;
         lastInputAt = 0;
         startedAt = performance.now();
-        lastFrameAt = startedAt;
+        stageStartedAt = startedAt;
+        stageNeedleStart = needleAngle;
         timeText.textContent = (TIME_LIMIT_MS / 1000).toFixed(1);
         timerFill.style.transform = 'scaleX(1)';
         timerFill.classList.remove('danger');
