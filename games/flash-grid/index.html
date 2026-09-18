@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#090a0d" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>P-Tech: FlashGrid</title>
+  <style>
+    :root {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color-scheme: dark;
+      --viewport-height: 100dvh;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      overscroll-behavior: none;
+      background: #06070a;
+    }
+    body {
+      position: fixed;
+      inset: 0;
+      height: var(--viewport-height);
+      display: grid;
+      place-items: center;
+      padding: clamp(0px, 1.8dvh, 14px);
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    button { font: inherit; touch-action: manipulation; }
+
+    #app {
+      --bg: #0b0c0f;
+      --panel: #14161c;
+      --panel-2: #1d2028;
+      --text: #f7f7f2;
+      --muted: #9298a5;
+      --border: #30343d;
+      --primary: #ffd34e;
+      --primary-ink: #241c00;
+      --correct: #48dbc6;
+      --danger: #ef4760;
+      width: min(100%, 680px);
+      height: min(820px, 100%);
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: clamp(0px, 3vw, 24px);
+      background:
+        radial-gradient(circle at 50% -12%, rgba(255, 211, 78, .11), transparent 34%),
+        var(--bg);
+      color: var(--text);
+      box-shadow: 0 22px 80px rgba(0, 0, 0, .48);
+    }
+    #app[data-theme="white"] {
+      --bg: #f6f5ef;
+      --panel: #fff;
+      --panel-2: #e9e7df;
+      --text: #1b1b19;
+      --muted: #6f716f;
+      --border: #d0cec5;
+      --primary-ink: #302600;
+      color-scheme: light;
+    }
+
+    .screen {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      padding:
+        max(clamp(10px, 2.2dvh, 18px), env(safe-area-inset-top))
+        max(clamp(10px, 2vw, 18px), env(safe-area-inset-right))
+        max(clamp(10px, 2.2dvh, 18px), env(safe-area-inset-bottom))
+        max(clamp(10px, 2vw, 18px), env(safe-area-inset-left));
+    }
+    .hidden { display: none !important; }
+
+    .title-screen, .result-screen {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: clamp(15px, 3.5dvh, 30px);
+    }
+    .eyebrow {
+      margin: 0;
+      color: var(--primary);
+      font-size: clamp(.68rem, 2.4vw, .8rem);
+      font-weight: 950;
+      letter-spacing: .3em;
+    }
+    .brand {
+      margin: 0;
+      font-size: clamp(2.2rem, 10vw, 4.6rem);
+      line-height: .86;
+      font-weight: 1000;
+      letter-spacing: -.02em;
+    }
+    .brand span { display: block; color: var(--primary); }
+    .lead {
+      max-width: 34rem;
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(.82rem, 3vw, 1rem);
+      line-height: 1.8;
+    }
+    .theme-btn, .hub-link {
+      position: absolute;
+      top: max(4px, env(safe-area-inset-top));
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 13px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--text);
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: .09em;
+    }
+    .theme-btn { right: max(4px, env(safe-area-inset-right)); cursor: pointer; }
+    .hub-link { left: max(4px, env(safe-area-inset-left)); text-decoration: none; }
+    .primary-btn, .secondary-btn, .exit-btn {
+      border: 0;
+      cursor: pointer;
+      font-weight: 950;
+    }
+    .primary-btn {
+      min-width: 170px;
+      min-height: 54px;
+      padding: 0 34px;
+      border-radius: 14px;
+      background: var(--primary);
+      color: var(--primary-ink);
+      letter-spacing: .14em;
+      box-shadow: 0 10px 30px rgba(255, 211, 78, .2);
+    }
+    .secondary-btn {
+      min-height: 48px;
+      padding: 0 28px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--panel);
+      color: var(--text);
+      letter-spacing: .08em;
+    }
+    button:active { transform: translateY(1px) scale(.99); }
+
+    .game-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(7px, 1.35dvh, 12px);
+    }
+    .hud {
+      width: 100%;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+    }
+    .exit-btn {
+      min-height: 38px;
+      padding: 0 13px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: var(--panel);
+      color: var(--text);
+      font-size: .76rem;
+      letter-spacing: .08em;
+    }
+    .game-title {
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      color: var(--primary);
+      font-size: clamp(.8rem, 3vw, 1rem);
+      font-weight: 1000;
+      letter-spacing: .08em;
+    }
+    .status {
+      min-width: 84px;
+      text-align: right;
+      font-size: clamp(.65rem, 2.5vw, .78rem);
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .timer-track {
+      width: 100%;
+      height: clamp(6px, 1.1dvh, 9px);
+      overflow: hidden;
+      border-radius: 999px;
+      background: var(--panel-2);
+    }
+    .timer-fill {
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--primary);
+      transform-origin: left center;
+      transition: transform .08s linear, background .2s ease;
+    }
+    .timer-fill.danger { background: var(--danger); }
+    .phase-row {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .phase {
+      color: var(--muted);
+      font-size: clamp(.7rem, 2.6vw, .84rem);
+      font-weight: 900;
+      letter-spacing: .05em;
+    }
+    .time {
+      min-width: 54px;
+      color: var(--text);
+      text-align: right;
+      font-size: clamp(1rem, 3.8vw, 1.25rem);
+      font-weight: 1000;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .board {
+      width: min(100%, 560px, calc(var(--viewport-height) - 178px));
+      aspect-ratio: 1;
+      flex: 0 1 auto;
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      grid-template-rows: repeat(7, 1fr);
+      gap: clamp(4px, 1vw, 8px);
+      padding: clamp(4px, 1vw, 8px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: color-mix(in srgb, var(--panel) 82%, transparent);
+    }
+    .cell {
+      min-width: 0;
+      min-height: 0;
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: clamp(5px, 1.4vw, 10px);
+      background: color-mix(in srgb, var(--panel-2) 68%, transparent);
+      cursor: pointer;
+      transition: background .13s ease, border-color .13s ease, box-shadow .13s ease, transform .13s ease;
+    }
+    .cell:hover:not(:disabled) { border-color: color-mix(in srgb, var(--primary) 55%, var(--border)); }
+    .cell:disabled { cursor: default; }
+    .cell.lit {
+      border-color: var(--primary);
+      background: var(--primary);
+      box-shadow: 0 0 12px rgba(255, 211, 78, .72), inset 0 0 0 2px rgba(255, 255, 255, .28);
+      animation: pulse .8s ease-in-out infinite alternate;
+    }
+    .cell.correct {
+      border-color: var(--correct);
+      background: var(--correct);
+      box-shadow: 0 0 12px rgba(72, 219, 198, .32);
+    }
+    .cell.wrong {
+      border-color: var(--danger);
+      background: var(--danger);
+      box-shadow: 0 0 12px rgba(239, 71, 96, .32);
+      animation: wrong .24s ease;
+    }
+    @keyframes pulse {
+      from { filter: brightness(.9); }
+      to { filter: brightness(1.18); }
+    }
+    @keyframes wrong {
+      0%, 100% { transform: translateX(0); }
+      30% { transform: translateX(-4px); }
+      70% { transform: translateX(4px); }
+    }
+    .instruction {
+      min-height: 20px;
+      margin: 0;
+      color: var(--muted);
+      text-align: center;
+      font-size: clamp(.7rem, 2.5vw, .84rem);
+      font-weight: 800;
+    }
+
+    .result-mark {
+      width: clamp(74px, 19vw, 106px);
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border: 3px solid currentColor;
+      border-radius: 50%;
+      color: var(--correct);
+      font-size: clamp(2rem, 9vw, 3.6rem);
+      font-weight: 1000;
+    }
+    .result-screen[data-result="fail"] .result-mark { color: var(--danger); }
+    .result-title {
+      margin: 0;
+      font-size: clamp(2rem, 9vw, 4rem);
+      line-height: 1;
+      font-weight: 1000;
+      letter-spacing: .04em;
+    }
+    .result-detail { margin: 0; color: var(--muted); font-weight: 800; }
+    .result-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+    @media (max-height: 590px) {
+      .screen { padding-top: 7px; padding-bottom: 7px; }
+      .game-screen { gap: 5px; }
+      .phase-row { line-height: 1; }
+      .board { width: min(100%, calc(var(--viewport-height) - 126px), 560px); }
+      .instruction { min-height: 16px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main id="app" data-theme="black">
+    <section id="titleScreen" class="screen title-screen">
+      <a class="hub-link" href="../../" aria-label="ゲーム選択へ戻る">← P-TECH</a>
+      <button id="themeButton" class="theme-btn" type="button" aria-label="テーマを切り替える">WHITE</button>
+      <p class="eyebrow">P-TECH</p>
+      <h1 class="brand">FLASH<span>GRID</span></h1>
+      <p class="lead">一瞬だけ点灯するマスを記憶。<br />消灯後に同じ10マスをすべて選択せよ。</p>
+      <button id="startButton" class="primary-btn" type="button">START</button>
+    </section>
+
+    <section id="gameScreen" class="screen game-screen hidden" aria-label="ゲーム画面">
+      <header class="hud">
+        <button id="exitButton" class="exit-btn" type="button">EXIT</button>
+        <div class="game-title">FLASH GRID</div>
+        <div id="statusText" class="status">FOUND 0/10</div>
+      </header>
+      <div class="timer-track" aria-hidden="true"><div id="timerFill" class="timer-fill"></div></div>
+      <div class="phase-row">
+        <span id="phaseText" class="phase">記憶フェーズ</span>
+        <span id="timeText" class="time">4.0</span>
+      </div>
+      <div id="board" class="board" role="grid" aria-label="7列7行のフラッシュグリッド"></div>
+      <p id="instruction" class="instruction" aria-live="polite">点灯している10マスの位置を記憶</p>
+    </section>
+
+    <section id="resultScreen" class="screen result-screen hidden" data-result="success">
+      <div id="resultMark" class="result-mark">✓</div>
+      <h2 id="resultTitle" class="result-title">CLEARED</h2>
+      <p id="resultDetail" class="result-detail"></p>
+      <div class="result-actions">
+        <button id="retryButton" class="primary-btn" type="button">RETRY</button>
+        <button id="titleButton" class="secondary-btn" type="button">TITLE</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const SIZE = 7;
+      const TARGET_COUNT = 10;
+      const MEMORY_MS = 4000;
+      const ANSWER_MS = 10000;
+      const app = document.getElementById('app');
+      const titleScreen = document.getElementById('titleScreen');
+      const gameScreen = document.getElementById('gameScreen');
+      const resultScreen = document.getElementById('resultScreen');
+      const board = document.getElementById('board');
+      const phaseText = document.getElementById('phaseText');
+      const timeText = document.getElementById('timeText');
+      const statusText = document.getElementById('statusText');
+      const timerFill = document.getElementById('timerFill');
+      const instruction = document.getElementById('instruction');
+      const themeButton = document.getElementById('themeButton');
+      const resultMark = document.getElementById('resultMark');
+      const resultTitle = document.getElementById('resultTitle');
+      const resultDetail = document.getElementById('resultDetail');
+
+      let targets = new Set();
+      let selected = new Set();
+      let phase = 'idle';
+      let phaseStartedAt = 0;
+      let animationFrame = 0;
+      let locked = false;
+      let audioContext = null;
+
+      const showScreen = (screen) => {
+        [titleScreen, gameScreen, resultScreen].forEach((item) => item.classList.toggle('hidden', item !== screen));
+      };
+
+      const updateViewportHeight = () => {
+        const height = window.visualViewport?.height || window.innerHeight;
+        document.documentElement.style.setProperty('--viewport-height', `${height}px`);
+      };
+
+      const setTheme = (theme) => {
+        const white = theme === 'white';
+        app.dataset.theme = white ? 'white' : 'black';
+        themeButton.textContent = white ? 'BLACK' : 'WHITE';
+        document.querySelector('meta[name="theme-color"]').content = white ? '#f6f5ef' : '#090a0d';
+        try { localStorage.setItem('ptech-theme', app.dataset.theme); } catch (_) {}
+      };
+
+      const tone = (frequency, duration = .06, volume = .035) => {
+        try {
+          audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+          const oscillator = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          oscillator.type = 'sine';
+          oscillator.frequency.value = frequency;
+          gain.gain.setValueAtTime(volume, audioContext.currentTime);
+          gain.gain.exponentialRampToValueAtTime(.0001, audioContext.currentTime + duration);
+          oscillator.connect(gain).connect(audioContext.destination);
+          oscillator.start();
+          oscillator.stop(audioContext.currentTime + duration);
+        } catch (_) {}
+      };
+
+      const shuffledIndices = () => {
+        const indices = Array.from({ length: SIZE * SIZE }, (_, index) => index);
+        for (let index = indices.length - 1; index > 0; index--) {
+          const swapIndex = Math.floor(Math.random() * (index + 1));
+          [indices[index], indices[swapIndex]] = [indices[swapIndex], indices[index]];
+        }
+        return indices;
+      };
+
+      const generatePattern = () => {
+        targets = new Set(shuffledIndices().slice(0, TARGET_COUNT));
+      };
+
+      const renderBoard = () => {
+        board.replaceChildren();
+        for (let index = 0; index < SIZE * SIZE; index++) {
+          const cell = document.createElement('button');
+          const row = Math.floor(index / SIZE) + 1;
+          const col = index % SIZE + 1;
+          cell.type = 'button';
+          cell.className = `cell${targets.has(index) ? ' lit' : ''}`;
+          cell.dataset.index = index;
+          cell.setAttribute('role', 'gridcell');
+          cell.setAttribute('aria-label', `${row}行${col}列`);
+          cell.disabled = true;
+          cell.addEventListener('click', onCellClick);
+          board.appendChild(cell);
+        }
+      };
+
+      const updateStatus = () => {
+        statusText.textContent = `FOUND ${selected.size}/${TARGET_COUNT}`;
+      };
+
+      const startAnswer = () => {
+        phase = 'answer';
+        phaseStartedAt = performance.now();
+        phaseText.textContent = '再現フェーズ';
+        timeText.textContent = (ANSWER_MS / 1000).toFixed(1);
+        timerFill.style.transform = 'scaleX(1)';
+        timerFill.classList.remove('danger');
+        board.querySelectorAll('.cell').forEach((cell) => {
+          cell.classList.remove('lit');
+          cell.disabled = false;
+        });
+        instruction.textContent = '記憶した10マスをすべて選択';
+        tone(560, .08, .03);
+        animationFrame = requestAnimationFrame(updateTimer);
+      };
+
+      function onCellClick(event) {
+        if (phase !== 'answer' || locked) return;
+        const cell = event.currentTarget;
+        const index = Number(cell.dataset.index);
+        if (selected.has(index)) return;
+
+        if (!targets.has(index)) {
+          locked = true;
+          cancelAnimationFrame(animationFrame);
+          cell.classList.add('wrong');
+          cell.disabled = true;
+          tone(145, .13, .04);
+          window.setTimeout(() => finish(false, `${selected.size}/${TARGET_COUNT}マス再現`, 'FAILED'), 280);
+          return;
+        }
+
+        selected.add(index);
+        cell.classList.add('correct');
+        cell.disabled = true;
+        updateStatus();
+        tone(380 + selected.size * 24, .06, .03);
+        if (selected.size === TARGET_COUNT) finish(true, `${TARGET_COUNT}/${TARGET_COUNT}マスを完全再現`);
+      }
+
+      const updateTimer = (now) => {
+        if (phase !== 'memory' && phase !== 'answer') return;
+        const limit = phase === 'memory' ? MEMORY_MS : ANSWER_MS;
+        const remaining = Math.max(0, limit - (now - phaseStartedAt));
+        timeText.textContent = (remaining / 1000).toFixed(1);
+        const ratio = remaining / limit;
+        timerFill.style.transform = `scaleX(${ratio})`;
+        timerFill.classList.toggle('danger', ratio <= .25);
+        if (remaining <= 0) {
+          if (phase === 'memory') startAnswer();
+          else finish(false, `${selected.size}/${TARGET_COUNT}マス再現`, 'TIME UP');
+          return;
+        }
+        animationFrame = requestAnimationFrame(updateTimer);
+      };
+
+      const startGame = () => {
+        cancelAnimationFrame(animationFrame);
+        generatePattern();
+        selected = new Set();
+        phase = 'memory';
+        locked = false;
+        phaseStartedAt = performance.now();
+        renderBoard();
+        phaseText.textContent = '記憶フェーズ';
+        timeText.textContent = (MEMORY_MS / 1000).toFixed(1);
+        timerFill.style.transform = 'scaleX(1)';
+        timerFill.classList.remove('danger');
+        instruction.textContent = '点灯している10マスの位置を記憶';
+        updateStatus();
+        showScreen(gameScreen);
+        animationFrame = requestAnimationFrame(updateTimer);
+      };
+
+      const finish = (success, detail, title = '') => {
+        if (phase !== 'memory' && phase !== 'answer') return;
+        phase = 'result';
+        locked = true;
+        cancelAnimationFrame(animationFrame);
+        board.querySelectorAll('.cell').forEach((cell) => { cell.disabled = true; });
+        resultScreen.dataset.result = success ? 'success' : 'fail';
+        resultMark.textContent = success ? '✓' : '×';
+        resultTitle.textContent = title || (success ? 'CLEARED' : 'FAILED');
+        resultDetail.textContent = detail;
+        showScreen(resultScreen);
+        if (success) {
+          tone(523, .12, .045);
+          window.setTimeout(() => tone(659, .12, .045), 100);
+          window.setTimeout(() => tone(784, .18, .045), 200);
+        } else {
+          tone(180, .18, .045);
+        }
+      };
+
+      const goToTitle = () => {
+        phase = 'idle';
+        locked = false;
+        cancelAnimationFrame(animationFrame);
+        showScreen(titleScreen);
+      };
+
+      document.getElementById('startButton').addEventListener('click', startGame);
+      document.getElementById('retryButton').addEventListener('click', startGame);
+      document.getElementById('titleButton').addEventListener('click', goToTitle);
+      document.getElementById('exitButton').addEventListener('click', goToTitle);
+      themeButton.addEventListener('click', () => setTheme(app.dataset.theme === 'white' ? 'black' : 'white'));
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !gameScreen.classList.contains('hidden')) goToTitle();
+        if ((event.key === 'Enter' || event.key === ' ') && !titleScreen.classList.contains('hidden')) startGame();
+      });
+      window.addEventListener('resize', updateViewportHeight);
+      window.visualViewport?.addEventListener('resize', updateViewportHeight);
+      window.addEventListener('pageshow', updateViewportHeight);
+      updateViewportHeight();
+      let storedTheme = 'black';
+      try { storedTheme = localStorage.getItem('ptech-theme') || 'black'; } catch (_) {}
+      setTheme(storedTheme);
+    })();
+  </script>
+</body>
+</html>

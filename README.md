@@ -35,6 +35,13 @@ GTA FiveMの犯罪ギミックを練習するための、スマートフォン�
 - 偽番号を無視して色・図形に関する3問へ回答
 - 5秒の記憶フェーズと15秒の回答フェーズ
 
+### P-Tech: FlashGrid
+
+- 対象: 汎用（`games.json` で変更可能）
+- 7列 × 7行の点灯位置を記憶
+- 4秒の記憶フェーズと10秒の再現フェーズ
+- 正しい10マスをすべて選ぶと成功
+
 ## Structure
 
 ```text
@@ -44,6 +51,7 @@ games/
   chain-braker/             ChainBraker本体と仕様
   jumping-maze/             JumpingMaze本体と仕様
   card-memory/              CardMemory本体と仕様
+  flash-grid/               FlashGrid本体と仕様
 ```
 
 外部ライブラリとビルド作業は不要です。
