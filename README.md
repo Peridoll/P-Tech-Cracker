@@ -56,6 +56,13 @@ GTA FiveMの犯罪ギミックを練習するための、スマートフォン�
 - 画面タップとキーボード入力に対応
 - ミス3回未満で全信号を処理すると成功
 
+### P-Tech: PulseDial
+
+- 対象: 汎用（`games.json` で変更可能）
+- 回転する針を光の判定エリアへ合わせる
+- 成功するたびに判定幅が狭まり、速度と方向が変化
+- 30秒以内に8段階を解除すると成功
+
 ## Structure
 
 ```text
@@ -68,6 +75,7 @@ games/
   flash-grid/               FlashGrid本体と仕様
   circuit-link/             CircuitLink本体と仕様
   rapid-sequence/           RapidSequence本体と仕様
+  pulse-dial/               PulseDial本体と仕様
 ```
 
 外部ライブラリとビルド作業は不要です。

@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#080b0a" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>P-Tech: PulseDial</title>
+  <style>
+    :root {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color-scheme: dark;
+      --viewport-height: 100dvh;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      overscroll-behavior: none;
+      background: #050706;
+    }
+    body {
+      position: fixed;
+      inset: 0;
+      height: var(--viewport-height);
+      display: grid;
+      place-items: center;
+      padding: clamp(0px, 1.8dvh, 14px);
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    button { font: inherit; touch-action: manipulation; }
+
+    #app {
+      --bg: #09110e;
+      --panel: #111d18;
+      --panel-2: #1b2c24;
+      --text: #f4fff9;
+      --muted: #8da89b;
+      --border: #2b493c;
+      --primary: #8cff73;
+      --primary-dark: #319f43;
+      --danger: #ff526d;
+      width: min(100%, 680px);
+      height: min(820px, 100%);
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: clamp(0px, 3vw, 24px);
+      background:
+        radial-gradient(circle at 50% -12%, rgba(140, 255, 115, .12), transparent 35%),
+        var(--bg);
+      color: var(--text);
+      box-shadow: 0 22px 80px rgba(0, 0, 0, .48);
+    }
+    #app[data-theme="white"] {
+      --bg: #f3f9f4;
+      --panel: #fff;
+      --panel-2: #e1eee4;
+      --text: #15251b;
+      --muted: #647c6b;
+      --border: #bfd4c4;
+      --primary-dark: #218637;
+      color-scheme: light;
+    }
+    .screen {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      padding:
+        max(clamp(10px, 2.2dvh, 18px), env(safe-area-inset-top))
+        max(clamp(10px, 2vw, 18px), env(safe-area-inset-right))
+        max(clamp(10px, 2.2dvh, 18px), env(safe-area-inset-bottom))
+        max(clamp(10px, 2vw, 18px), env(safe-area-inset-left));
+    }
+    .hidden { display: none !important; }
+    .title-screen, .result-screen {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: clamp(15px, 3.5dvh, 30px);
+    }
+    .eyebrow {
+      margin: 0;
+      color: var(--primary);
+      font-size: clamp(.68rem, 2.4vw, .8rem);
+      font-weight: 950;
+      letter-spacing: .3em;
+    }
+    .brand {
+      margin: 0;
+      font-size: clamp(2.2rem, 10vw, 4.6rem);
+      line-height: .86;
+      font-weight: 1000;
+      letter-spacing: -.03em;
+    }
+    .brand span { display: block; color: var(--primary); }
+    .lead {
+      max-width: 34rem;
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(.82rem, 3vw, 1rem);
+      line-height: 1.8;
+    }
+    .theme-btn, .hub-link {
+      position: absolute;
+      top: max(4px, env(safe-area-inset-top));
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 13px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--text);
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: .09em;
+    }
+    .theme-btn { right: max(4px, env(safe-area-inset-right)); cursor: pointer; }
+    .hub-link { left: max(4px, env(safe-area-inset-left)); text-decoration: none; }
+    .primary-btn, .secondary-btn, .exit-btn, .sync-btn { border: 0; cursor: pointer; font-weight: 950; }
+    .primary-btn {
+      min-width: 170px;
+      min-height: 54px;
+      padding: 0 34px;
+      border-radius: 14px;
+      background: var(--primary);
+      color: #102c15;
+      letter-spacing: .14em;
+      box-shadow: 0 10px 30px rgba(140, 255, 115, .18);
+    }
+    .secondary-btn {
+      min-height: 48px;
+      padding: 0 28px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--panel);
+      color: var(--text);
+      letter-spacing: .08em;
+    }
+    button:active { transform: translateY(1px) scale(.99); }
+
+    .game-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(7px, 1.35dvh, 12px);
+      touch-action: manipulation;
+    }
+    .hud {
+      width: 100%;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+    }
+    .exit-btn {
+      min-height: 38px;
+      padding: 0 13px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: var(--panel);
+      color: var(--text);
+      font-size: .76rem;
+      letter-spacing: .08em;
+    }
+    .game-title {
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      color: var(--primary);
+      font-size: clamp(.8rem, 3vw, 1rem);
+      font-weight: 1000;
+      letter-spacing: .08em;
+    }
+    .status {
+      min-width: 142px;
+      text-align: right;
+      font-size: clamp(.62rem, 2.35vw, .76rem);
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .timer-track {
+      width: 100%;
+      height: clamp(6px, 1.1dvh, 9px);
+      overflow: hidden;
+      border-radius: 999px;
+      background: var(--panel-2);
+    }
+    .timer-fill {
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--primary);
+      transform-origin: left center;
+      transition: transform .08s linear, background .2s ease;
+    }
+    .timer-fill.danger { background: var(--danger); }
+    .phase-row {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .phase {
+      color: var(--muted);
+      font-size: clamp(.68rem, 2.5vw, .82rem);
+      font-weight: 900;
+      letter-spacing: .05em;
+    }
+    .time {
+      min-width: 54px;
+      text-align: right;
+      font-size: clamp(1rem, 3.8vw, 1.25rem);
+      font-weight: 1000;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .dial-wrap {
+      width: min(100%, 520px, calc(var(--viewport-height) - 245px));
+      aspect-ratio: 1;
+      flex: 0 1 auto;
+      display: grid;
+      place-items: center;
+    }
+    .dial {
+      position: relative;
+      width: 92%;
+      aspect-ratio: 1;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      background:
+        repeating-conic-gradient(from -1deg, color-mix(in srgb, var(--border) 70%, transparent) 0 1deg, transparent 1deg 10deg),
+        radial-gradient(circle, var(--panel) 0 18%, transparent 18.5% 62%, var(--panel-2) 62.5% 66%, var(--panel) 66.5% 100%);
+      box-shadow: inset 0 0 42px rgba(0, 0, 0, .24), 0 0 38px rgba(140, 255, 115, .05);
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .dial.good { box-shadow: inset 0 0 42px rgba(0, 0, 0, .18), 0 0 34px rgba(140, 255, 115, .38); }
+    .dial.bad { box-shadow: inset 0 0 42px rgba(0, 0, 0, .18), 0 0 34px rgba(255, 82, 109, .38); }
+    .arc-svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); pointer-events: none; }
+    .arc-track { fill: none; stroke: color-mix(in srgb, var(--border) 76%, transparent); stroke-width: 6; }
+    .target-arc {
+      fill: none;
+      stroke: var(--primary);
+      stroke-width: 9;
+      stroke-linecap: round;
+      filter: drop-shadow(0 0 4px rgba(140, 255, 115, .55));
+      transition: stroke-dasharray .16s ease, transform .16s ease;
+      transform-origin: 50px 50px;
+    }
+    .needle {
+      position: absolute;
+      z-index: 3;
+      inset: 0;
+      pointer-events: none;
+      transform: rotate(0deg);
+      will-change: transform;
+    }
+    .needle::before {
+      content: "";
+      position: absolute;
+      left: calc(50% - 2px);
+      top: 9%;
+      width: 4px;
+      height: 42%;
+      border-radius: 999px;
+      background: var(--text);
+      box-shadow: 0 0 8px rgba(255, 255, 255, .42);
+    }
+    .needle::after {
+      content: "";
+      position: absolute;
+      left: calc(50% - 8px);
+      top: calc(50% - 8px);
+      width: 16px;
+      aspect-ratio: 1;
+      border: 4px solid var(--primary);
+      border-radius: 50%;
+      background: var(--panel);
+      box-shadow: 0 0 10px rgba(140, 255, 115, .35);
+    }
+    .dial-label {
+      position: absolute;
+      z-index: 2;
+      left: 50%;
+      top: 61%;
+      transform: translateX(-50%);
+      color: var(--muted);
+      font-size: clamp(.62rem, 2.4vw, .78rem);
+      font-weight: 950;
+      letter-spacing: .14em;
+      white-space: nowrap;
+    }
+    .sync-btn {
+      width: min(100%, 310px);
+      min-height: clamp(50px, 8dvh, 64px);
+      border: 1px solid color-mix(in srgb, var(--primary) 55%, var(--border));
+      border-radius: 16px;
+      background: var(--panel-2);
+      color: var(--primary);
+      font-size: clamp(.9rem, 3.5vw, 1.05rem);
+      letter-spacing: .18em;
+      box-shadow: inset 0 -4px 0 rgba(0, 0, 0, .14);
+    }
+    .instruction {
+      min-height: 18px;
+      margin: 0;
+      color: var(--muted);
+      text-align: center;
+      font-size: clamp(.68rem, 2.4vw, .82rem);
+      font-weight: 800;
+    }
+
+    .result-mark {
+      width: clamp(74px, 19vw, 106px);
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border: 3px solid currentColor;
+      border-radius: 50%;
+      color: var(--primary);
+      font-size: clamp(2rem, 9vw, 3.6rem);
+      font-weight: 1000;
+    }
+    .result-screen[data-result="fail"] .result-mark { color: var(--danger); }
+    .result-title {
+      margin: 0;
+      font-size: clamp(2rem, 9vw, 4rem);
+      line-height: 1;
+      font-weight: 1000;
+      letter-spacing: .04em;
+    }
+    .result-detail { margin: 0; color: var(--muted); font-weight: 800; }
+    .result-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+    @media (max-height: 590px) {
+      .screen { padding-top: 7px; padding-bottom: 7px; }
+      .game-screen { gap: 4px; }
+      .phase-row { line-height: 1; }
+      .dial-wrap { width: min(100%, calc(var(--viewport-height) - 172px), 520px); }
+      .sync-btn { min-height: 42px; }
+      .instruction { min-height: 15px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition-duration: .001ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main id="app" data-theme="black">
+    <section id="titleScreen" class="screen title-screen">
+      <a class="hub-link" href="../../" aria-label="ゲーム選択へ戻る">← P-TECH</a>
+      <button id="themeButton" class="theme-btn" type="button" aria-label="テーマを切り替える">WHITE</button>
+      <p class="eyebrow">P-TECH</p>
+      <h1 class="brand">PULSE<span>DIAL</span></h1>
+      <p class="lead">回転する針と光のエリアを同期。<br />8段階のセキュリティを連続解除せよ。</p>
+      <button id="startButton" class="primary-btn" type="button">START</button>
+    </section>
+
+    <section id="gameScreen" class="screen game-screen hidden" aria-label="ゲーム画面">
+      <header class="hud">
+        <button id="exitButton" class="exit-btn" type="button">EXIT</button>
+        <div class="game-title">PULSE DIAL</div>
+        <div id="statusText" class="status">STAGE 1/8　MISS 0/3</div>
+      </header>
+      <div class="timer-track" aria-hidden="true"><div id="timerFill" class="timer-fill"></div></div>
+      <div class="phase-row">
+        <span class="phase">同期フェーズ</span>
+        <span id="timeText" class="time">30.0</span>
+      </div>
+      <div class="dial-wrap">
+        <div id="dial" class="dial" role="button" tabindex="0" aria-label="針が光る範囲に入ったらタップ">
+          <svg class="arc-svg" viewBox="0 0 100 100" aria-hidden="true">
+            <circle class="arc-track" cx="50" cy="50" r="42"></circle>
+            <circle id="targetArc" class="target-arc" cx="50" cy="50" r="42"></circle>
+          </svg>
+          <div id="needle" class="needle"></div>
+          <div class="dial-label">TAP TO SYNC</div>
+        </div>
+      </div>
+      <button id="syncButton" class="sync-btn" type="button">SYNC</button>
+      <p id="instruction" class="instruction" aria-live="polite">針が緑のエリアに入った瞬間にタップ</p>
+    </section>
+
+    <section id="resultScreen" class="screen result-screen hidden" data-result="success">
+      <div id="resultMark" class="result-mark">✓</div>
+      <h2 id="resultTitle" class="result-title">CLEARED</h2>
+      <p id="resultDetail" class="result-detail"></p>
+      <div class="result-actions">
+        <button id="retryButton" class="primary-btn" type="button">RETRY</button>
+        <button id="titleButton" class="secondary-btn" type="button">TITLE</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const STAGE_COUNT = 8;
+      const MAX_MISSES = 3;
+      const TIME_LIMIT_MS = 30000;
+      const CIRCUMFERENCE = 2 * Math.PI * 42;
+      const TARGET_WIDTHS = [60, 54, 48, 42, 36, 32, 28, 24];
+      const app = document.getElementById('app');
+      const titleScreen = document.getElementById('titleScreen');
+      const gameScreen = document.getElementById('gameScreen');
+      const resultScreen = document.getElementById('resultScreen');
+      const dial = document.getElementById('dial');
+      const targetArc = document.getElementById('targetArc');
+      const needle = document.getElementById('needle');
+      const timeText = document.getElementById('timeText');
+      const statusText = document.getElementById('statusText');
+      const timerFill = document.getElementById('timerFill');
+      const instruction = document.getElementById('instruction');
+      const themeButton = document.getElementById('themeButton');
+      const resultMark = document.getElementById('resultMark');
+      const resultTitle = document.getElementById('resultTitle');
+      const resultDetail = document.getElementById('resultDetail');
+
+      let stage = 1;
+      let misses = 0;
+      let needleAngle = 0;
+      let targetCenter = 0;
+      let targetWidth = TARGET_WIDTHS[0];
+      let speed = 90;
+      let direction = 1;
+      let phase = 'idle';
+      let inputLocked = false;
+      let lastInputAt = 0;
+      let startedAt = 0;
+      let lastFrameAt = 0;
+      let animationFrame = 0;
+      let transitionTimer = 0;
+      let audioContext = null;
+
+      const showScreen = (screen) => {
+        [titleScreen, gameScreen, resultScreen].forEach((item) => item.classList.toggle('hidden', item !== screen));
+      };
+      const updateViewportHeight = () => {
+        const height = window.visualViewport?.height || window.innerHeight;
+        document.documentElement.style.setProperty('--viewport-height', `${height}px`);
+      };
+      const setTheme = (theme) => {
+        const white = theme === 'white';
+        app.dataset.theme = white ? 'white' : 'black';
+        themeButton.textContent = white ? 'BLACK' : 'WHITE';
+        document.querySelector('meta[name="theme-color"]').content = white ? '#f3f9f4' : '#080b0a';
+        try { localStorage.setItem('ptech-theme', app.dataset.theme); } catch (_) {}
+      };
+      const tone = (frequency, duration = .06, volume = .035) => {
+        try {
+          audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+          const oscillator = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          oscillator.type = 'sine';
+          oscillator.frequency.value = frequency;
+          gain.gain.setValueAtTime(volume, audioContext.currentTime);
+          gain.gain.exponentialRampToValueAtTime(.0001, audioContext.currentTime + duration);
+          oscillator.connect(gain).connect(audioContext.destination);
+          oscillator.start();
+          oscillator.stop(audioContext.currentTime + duration);
+        } catch (_) {}
+      };
+      const normalizeAngle = (angle) => ((angle % 360) + 360) % 360;
+      const angleDistance = (first, second) => Math.abs(((first - second + 540) % 360) - 180);
+      const updateStatus = () => {
+        statusText.textContent = `STAGE ${stage}/${STAGE_COUNT}　MISS ${misses}/${MAX_MISSES}`;
+      };
+      const renderTarget = () => {
+        const arcLength = CIRCUMFERENCE * targetWidth / 360;
+        targetArc.style.strokeDasharray = `${arcLength} ${CIRCUMFERENCE}`;
+        targetArc.style.transform = `rotate(${targetCenter - targetWidth / 2}deg)`;
+        dial.dataset.targetCenter = targetCenter.toFixed(3);
+        dial.dataset.targetWidth = targetWidth.toFixed(3);
+      };
+      const prepareStage = () => {
+        if (phase !== 'playing') return;
+        targetWidth = TARGET_WIDTHS[stage - 1];
+        targetCenter = Math.random() * 360;
+        speed = 90 + (stage - 1) * 18;
+        direction = Math.random() < .5 ? -1 : 1;
+        if (angleDistance(needleAngle, targetCenter) < targetWidth / 2 + 35) targetCenter = normalizeAngle(targetCenter + 150);
+        inputLocked = false;
+        instruction.textContent = '針が緑のエリアに入った瞬間にタップ';
+        renderTarget();
+        updateStatus();
+      };
+      const flashDial = (className) => {
+        dial.classList.remove('good', 'bad');
+        void dial.offsetWidth;
+        dial.classList.add(className);
+        window.setTimeout(() => dial.classList.remove(className), 180);
+      };
+      const attemptHit = () => {
+        const now = performance.now();
+        if (phase !== 'playing' || inputLocked || now - lastInputAt < 170) return;
+        lastInputAt = now;
+        const hit = angleDistance(needleAngle, targetCenter) <= targetWidth / 2;
+        if (hit) {
+          inputLocked = true;
+          flashDial('good');
+          instruction.textContent = 'SYNCED';
+          tone(520 + stage * 35, .07, .035);
+          if (stage >= STAGE_COUNT) {
+            finish(true, `${STAGE_COUNT}/${STAGE_COUNT}段階を同期・ミス ${misses}/${MAX_MISSES}`);
+            return;
+          }
+          stage++;
+          updateStatus();
+          clearTimeout(transitionTimer);
+          transitionTimer = window.setTimeout(prepareStage, 330);
+          return;
+        }
+        misses++;
+        flashDial('bad');
+        instruction.textContent = 'MISS';
+        tone(150, .1, .04);
+        updateStatus();
+        if (misses >= MAX_MISSES) finish(false, `${stage - 1}/${STAGE_COUNT}段階解除・ミス ${misses}/${MAX_MISSES}`, 'FAILED');
+      };
+      const updateGame = (now) => {
+        if (phase !== 'playing') return;
+        const delta = Math.min(50, now - lastFrameAt);
+        lastFrameAt = now;
+        needleAngle = normalizeAngle(needleAngle + direction * speed * delta / 1000);
+        needle.style.transform = `rotate(${needleAngle}deg)`;
+        dial.dataset.needleAngle = needleAngle.toFixed(3);
+        const remaining = Math.max(0, TIME_LIMIT_MS - (now - startedAt));
+        const ratio = remaining / TIME_LIMIT_MS;
+        timeText.textContent = (remaining / 1000).toFixed(1);
+        timerFill.style.transform = `scaleX(${ratio})`;
+        timerFill.classList.toggle('danger', ratio <= .25);
+        if (remaining <= 0) {
+          finish(false, `${stage - 1}/${STAGE_COUNT}段階解除・ミス ${misses}/${MAX_MISSES}`, 'TIME UP');
+          return;
+        }
+        animationFrame = requestAnimationFrame(updateGame);
+      };
+      const startGame = () => {
+        cancelAnimationFrame(animationFrame);
+        clearTimeout(transitionTimer);
+        stage = 1;
+        misses = 0;
+        needleAngle = Math.random() * 360;
+        phase = 'playing';
+        inputLocked = false;
+        lastInputAt = 0;
+        startedAt = performance.now();
+        lastFrameAt = startedAt;
+        timeText.textContent = (TIME_LIMIT_MS / 1000).toFixed(1);
+        timerFill.style.transform = 'scaleX(1)';
+        timerFill.classList.remove('danger');
+        needle.style.transform = `rotate(${needleAngle}deg)`;
+        showScreen(gameScreen);
+        prepareStage();
+        animationFrame = requestAnimationFrame(updateGame);
+      };
+      const finish = (success, detail, title = '') => {
+        if (phase !== 'playing') return;
+        phase = 'result';
+        inputLocked = true;
+        cancelAnimationFrame(animationFrame);
+        clearTimeout(transitionTimer);
+        resultScreen.dataset.result = success ? 'success' : 'fail';
+        resultMark.textContent = success ? '✓' : '×';
+        resultTitle.textContent = title || (success ? 'CLEARED' : 'FAILED');
+        resultDetail.textContent = detail;
+        showScreen(resultScreen);
+        if (success) {
+          tone(523, .12, .045);
+          window.setTimeout(() => tone(659, .12, .045), 100);
+          window.setTimeout(() => tone(784, .18, .045), 200);
+        } else tone(180, .18, .045);
+      };
+      const goToTitle = () => {
+        phase = 'idle';
+        cancelAnimationFrame(animationFrame);
+        clearTimeout(transitionTimer);
+        showScreen(titleScreen);
+      };
+
+      gameScreen.addEventListener('pointerdown', (event) => {
+        const button = event.target.closest('button');
+        if (button && button.id !== 'syncButton') return;
+        event.preventDefault();
+        attemptHit();
+      });
+      document.getElementById('startButton').addEventListener('click', startGame);
+      document.getElementById('retryButton').addEventListener('click', startGame);
+      document.getElementById('titleButton').addEventListener('click', goToTitle);
+      document.getElementById('exitButton').addEventListener('click', goToTitle);
+      themeButton.addEventListener('click', () => setTheme(app.dataset.theme === 'white' ? 'black' : 'white'));
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !gameScreen.classList.contains('hidden')) goToTitle();
+        if ((event.key === 'Enter' || event.key === ' ') && !titleScreen.classList.contains('hidden')) startGame();
+        else if ((event.key === 'Enter' || event.key === ' ') && phase === 'playing') {
+          event.preventDefault();
+          attemptHit();
+        }
+      });
+      window.addEventListener('resize', updateViewportHeight);
+      window.visualViewport?.addEventListener('resize', updateViewportHeight);
+      window.addEventListener('pageshow', updateViewportHeight);
+      updateViewportHeight();
+      let storedTheme = 'black';
+      try { storedTheme = localStorage.getItem('ptech-theme') || 'black'; } catch (_) {}
+      setTheme(storedTheme);
+    })();
+  </script>
+</body>
+</html>
