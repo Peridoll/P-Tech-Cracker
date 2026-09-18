@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0810" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>P-Tech: RapidSequence</title>
+  <style>
+    :root {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color-scheme: dark;
+      --viewport-height: 100dvh;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      overscroll-behavior: none;
+      background: #070509;
+    }
+    body {
+      position: fixed;
+      inset: 0;
+      height: var(--viewport-height);
+      display: grid;
+      place-items: center;
+      padding: clamp(0px, 1.8dvh, 14px);
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    button { font: inherit; touch-action: manipulation; }
+
+    #app {
+      --bg: #100b15;
+      --panel: #1a1221;
+      --panel-2: #2a1b34;
+      --text: #fff6ff;
+      --muted: #ab91ad;
+      --border: #49304d;
+      --primary: #ff62d0;
+      --primary-dark: #9e267b;
+      --correct: #6ce8bd;
+      --danger: #ff536a;
+      width: min(100%, 680px);
+      height: min(820px, 100%);
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: clamp(0px, 3vw, 24px);
+      background:
+        radial-gradient(circle at 50% -12%, rgba(255, 98, 208, .13), transparent 35%),
+        var(--bg);
+      color: var(--text);
+      box-shadow: 0 22px 80px rgba(0, 0, 0, .48);
+    }
+    #app[data-theme="white"] {
+      --bg: #faf2f8;
+      --panel: #fff;
+      --panel-2: #f0ddeb;
+      --text: #2d182b;
+      --muted: #80677d;
+      --border: #dec5d8;
+      --primary-dark: #a62480;
+      color-scheme: light;
+    }
+
+    .screen {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      padding:
+        max(clamp(10px, 2.2dvh, 18px), env(safe-area-inset-top))
+        max(clamp(10px, 2vw, 18px), env(safe-area-inset-right))
+        max(clamp(10px, 2.2dvh, 18px), env(safe-area-inset-bottom))
+        max(clamp(10px, 2vw, 18px), env(safe-area-inset-left));
+    }
+    .hidden { display: none !important; }
+    .title-screen, .result-screen {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: clamp(15px, 3.5dvh, 30px);
+    }
+    .eyebrow {
+      margin: 0;
+      color: var(--primary);
+      font-size: clamp(.68rem, 2.4vw, .8rem);
+      font-weight: 950;
+      letter-spacing: .3em;
+    }
+    .brand {
+      margin: 0;
+      font-size: clamp(2rem, 9vw, 4.2rem);
+      line-height: .87;
+      font-weight: 1000;
+      letter-spacing: -.03em;
+    }
+    .brand span { display: block; color: var(--primary); }
+    .lead {
+      max-width: 34rem;
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(.82rem, 3vw, 1rem);
+      line-height: 1.8;
+    }
+    .theme-btn, .hub-link {
+      position: absolute;
+      top: max(4px, env(safe-area-inset-top));
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 13px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--text);
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: .09em;
+    }
+    .theme-btn { right: max(4px, env(safe-area-inset-right)); cursor: pointer; }
+    .hub-link { left: max(4px, env(safe-area-inset-left)); text-decoration: none; }
+    .primary-btn, .secondary-btn, .exit-btn { border: 0; cursor: pointer; font-weight: 950; }
+    .primary-btn {
+      min-width: 170px;
+      min-height: 54px;
+      padding: 0 34px;
+      border-radius: 14px;
+      background: var(--primary);
+      color: #321028;
+      letter-spacing: .14em;
+      box-shadow: 0 10px 30px rgba(255, 98, 208, .2);
+    }
+    .secondary-btn {
+      min-height: 48px;
+      padding: 0 28px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--panel);
+      color: var(--text);
+      letter-spacing: .08em;
+    }
+    button:active { transform: translateY(1px) scale(.99); }
+
+    .game-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(6px, 1.2dvh, 10px);
+    }
+    .hud {
+      width: 100%;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+    }
+    .exit-btn {
+      min-height: 38px;
+      padding: 0 13px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: var(--panel);
+      color: var(--text);
+      font-size: .76rem;
+      letter-spacing: .08em;
+    }
+    .game-title {
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      color: var(--primary);
+      font-size: clamp(.76rem, 2.8vw, 1rem);
+      font-weight: 1000;
+      letter-spacing: .06em;
+    }
+    .status {
+      min-width: 128px;
+      text-align: right;
+      font-size: clamp(.6rem, 2.3vw, .75rem);
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .timer-track {
+      width: 100%;
+      height: clamp(6px, 1.1dvh, 9px);
+      overflow: hidden;
+      border-radius: 999px;
+      background: var(--panel-2);
+    }
+    .timer-fill {
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--primary);
+      transform-origin: left center;
+      transition: transform .08s linear, background .2s ease;
+    }
+    .timer-fill.danger { background: var(--danger); }
+    .phase-row {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .phase {
+      color: var(--muted);
+      font-size: clamp(.68rem, 2.5vw, .82rem);
+      font-weight: 900;
+      letter-spacing: .05em;
+    }
+    .time {
+      min-width: 54px;
+      text-align: right;
+      font-size: clamp(1rem, 3.8vw, 1.25rem);
+      font-weight: 1000;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stage {
+      position: relative;
+      width: min(100%, 540px);
+      flex: 1 1 auto;
+      min-height: 180px;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: color-mix(in srgb, var(--panel) 88%, transparent);
+    }
+    .lane {
+      position: relative;
+      min-width: 0;
+      overflow: hidden;
+      border-right: 1px solid var(--border);
+      background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--primary) 6%, transparent));
+    }
+    .lane:last-child { border-right: 0; }
+    .lane::before {
+      content: attr(data-label);
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: color-mix(in srgb, var(--muted) 48%, transparent);
+      font-size: clamp(1rem, 5vw, 1.6rem);
+      font-weight: 1000;
+    }
+    .target-zone {
+      position: absolute;
+      z-index: 1;
+      left: 0;
+      right: 0;
+      top: 78%;
+      height: 17%;
+      border-top: 2px solid var(--primary);
+      border-bottom: 2px solid var(--primary);
+      background: color-mix(in srgb, var(--primary) 10%, transparent);
+      box-shadow: 0 0 18px rgba(255, 98, 208, .12);
+      pointer-events: none;
+    }
+    .note {
+      position: absolute;
+      z-index: 2;
+      top: 0;
+      left: 50%;
+      width: clamp(40px, 11vw, 64px);
+      aspect-ratio: 1.35;
+      display: grid;
+      place-items: center;
+      border: 2px solid #fff;
+      border-radius: 11px;
+      background: var(--primary);
+      color: #321028;
+      box-shadow: 0 0 16px rgba(255, 98, 208, .35);
+      opacity: 0;
+      font-weight: 1000;
+      will-change: transform, opacity;
+    }
+    .note.hit { background: var(--correct); border-color: var(--correct); opacity: 0 !important; }
+    .note.missed { background: var(--danger); border-color: var(--danger); opacity: 0 !important; }
+    .pads {
+      width: min(100%, 540px);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: clamp(5px, 1.5vw, 10px);
+    }
+    .pad {
+      min-width: 0;
+      min-height: clamp(48px, 8dvh, 68px);
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel-2);
+      color: var(--text);
+      cursor: pointer;
+      font-size: clamp(1rem, 4vw, 1.35rem);
+      font-weight: 1000;
+      box-shadow: inset 0 -4px 0 rgba(0, 0, 0, .14);
+    }
+    .pad.flash-good { background: var(--correct); color: #083229; border-color: var(--correct); }
+    .pad.flash-bad { background: var(--danger); color: #fff; border-color: var(--danger); }
+    .instruction {
+      min-height: 18px;
+      margin: 0;
+      color: var(--muted);
+      text-align: center;
+      font-size: clamp(.68rem, 2.4vw, .82rem);
+      font-weight: 800;
+    }
+
+    .result-mark {
+      width: clamp(74px, 19vw, 106px);
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border: 3px solid currentColor;
+      border-radius: 50%;
+      color: var(--correct);
+      font-size: clamp(2rem, 9vw, 3.6rem);
+      font-weight: 1000;
+    }
+    .result-screen[data-result="fail"] .result-mark { color: var(--danger); }
+    .result-title {
+      margin: 0;
+      font-size: clamp(2rem, 9vw, 4rem);
+      line-height: 1;
+      font-weight: 1000;
+      letter-spacing: .04em;
+    }
+    .result-detail { margin: 0; color: var(--muted); font-weight: 800; }
+    .result-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+    @media (max-height: 590px) {
+      .screen { padding-top: 7px; padding-bottom: 7px; }
+      .game-screen { gap: 4px; }
+      .phase-row { line-height: 1; }
+      .pad { min-height: 42px; }
+      .instruction { min-height: 15px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main id="app" data-theme="black">
+    <section id="titleScreen" class="screen title-screen">
+      <a class="hub-link" href="../../" aria-label="ゲーム選択へ戻る">← P-TECH</a>
+      <button id="themeButton" class="theme-btn" type="button" aria-label="テーマを切り替える">WHITE</button>
+      <p class="eyebrow">P-TECH</p>
+      <h1 class="brand">RAPID<span>SEQUENCE</span></h1>
+      <p class="lead">4レーンを流れる信号を追跡。<br />判定ラインに重なった瞬間、同じ番号を入力せよ。</p>
+      <button id="startButton" class="primary-btn" type="button">START</button>
+    </section>
+
+    <section id="gameScreen" class="screen game-screen hidden" aria-label="ゲーム画面">
+      <header class="hud">
+        <button id="exitButton" class="exit-btn" type="button">EXIT</button>
+        <div class="game-title">RAPID SEQUENCE</div>
+        <div id="statusText" class="status">HIT 0/20　MISS 0/3</div>
+      </header>
+      <div class="timer-track" aria-hidden="true"><div id="timerFill" class="timer-fill"></div></div>
+      <div class="phase-row">
+        <span class="phase">追跡フェーズ</span>
+        <span id="timeText" class="time">16.7</span>
+      </div>
+      <div id="stage" class="stage" aria-label="4レーンの信号トラック">
+        <div class="target-zone" aria-hidden="true"></div>
+        <div class="lane" data-lane="0" data-label="1"></div>
+        <div class="lane" data-lane="1" data-label="2"></div>
+        <div class="lane" data-lane="2" data-label="3"></div>
+        <div class="lane" data-lane="3" data-label="4"></div>
+      </div>
+      <div class="pads" aria-label="入力パッド">
+        <button class="pad" type="button" data-lane="0" aria-label="レーン1">1</button>
+        <button class="pad" type="button" data-lane="1" aria-label="レーン2">2</button>
+        <button class="pad" type="button" data-lane="2" aria-label="レーン3">3</button>
+        <button class="pad" type="button" data-lane="3" aria-label="レーン4">4</button>
+      </div>
+      <p id="instruction" class="instruction" aria-live="polite">タップまたはキーボードの1〜4で入力</p>
+    </section>
+
+    <section id="resultScreen" class="screen result-screen hidden" data-result="success">
+      <div id="resultMark" class="result-mark">✓</div>
+      <h2 id="resultTitle" class="result-title">CLEARED</h2>
+      <p id="resultDetail" class="result-detail"></p>
+      <div class="result-actions">
+        <button id="retryButton" class="primary-btn" type="button">RETRY</button>
+        <button id="titleButton" class="secondary-btn" type="button">TITLE</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const LANE_COUNT = 4;
+      const NOTE_COUNT = 20;
+      const MAX_MISSES = 3;
+      const START_DELAY_MS = 800;
+      const NOTE_INTERVAL_MS = 700;
+      const TRAVEL_MS = 2200;
+      const HIT_WINDOW_MS = 380;
+      const GAME_DURATION_MS = START_DELAY_MS + (NOTE_COUNT - 1) * NOTE_INTERVAL_MS + TRAVEL_MS + HIT_WINDOW_MS;
+      const app = document.getElementById('app');
+      const titleScreen = document.getElementById('titleScreen');
+      const gameScreen = document.getElementById('gameScreen');
+      const resultScreen = document.getElementById('resultScreen');
+      const stage = document.getElementById('stage');
+      const lanes = [...document.querySelectorAll('.lane')];
+      const pads = [...document.querySelectorAll('.pad')];
+      const timeText = document.getElementById('timeText');
+      const statusText = document.getElementById('statusText');
+      const timerFill = document.getElementById('timerFill');
+      const instruction = document.getElementById('instruction');
+      const themeButton = document.getElementById('themeButton');
+      const resultMark = document.getElementById('resultMark');
+      const resultTitle = document.getElementById('resultTitle');
+      const resultDetail = document.getElementById('resultDetail');
+
+      let notes = [];
+      let phase = 'idle';
+      let startedAt = 0;
+      let animationFrame = 0;
+      let hits = 0;
+      let misses = 0;
+      let audioContext = null;
+
+      const showScreen = (screen) => {
+        [titleScreen, gameScreen, resultScreen].forEach((item) => item.classList.toggle('hidden', item !== screen));
+      };
+      const updateViewportHeight = () => {
+        const height = window.visualViewport?.height || window.innerHeight;
+        document.documentElement.style.setProperty('--viewport-height', `${height}px`);
+      };
+      const setTheme = (theme) => {
+        const white = theme === 'white';
+        app.dataset.theme = white ? 'white' : 'black';
+        themeButton.textContent = white ? 'BLACK' : 'WHITE';
+        document.querySelector('meta[name="theme-color"]').content = white ? '#faf2f8' : '#0b0810';
+        try { localStorage.setItem('ptech-theme', app.dataset.theme); } catch (_) {}
+      };
+      const tone = (frequency, duration = .06, volume = .035) => {
+        try {
+          audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+          const oscillator = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          oscillator.type = 'sine';
+          oscillator.frequency.value = frequency;
+          gain.gain.setValueAtTime(volume, audioContext.currentTime);
+          gain.gain.exponentialRampToValueAtTime(.0001, audioContext.currentTime + duration);
+          oscillator.connect(gain).connect(audioContext.destination);
+          oscillator.start();
+          oscillator.stop(audioContext.currentTime + duration);
+        } catch (_) {}
+      };
+      const buildSequence = () => {
+        notes = [];
+        let previousLane = -1;
+        for (let index = 0; index < NOTE_COUNT; index++) {
+          let lane = Math.floor(Math.random() * LANE_COUNT);
+          if (lane === previousLane && Math.random() < .65) lane = (lane + 1 + Math.floor(Math.random() * (LANE_COUNT - 1))) % LANE_COUNT;
+          previousLane = lane;
+          notes.push({
+            lane,
+            spawnAt: START_DELAY_MS + index * NOTE_INTERVAL_MS,
+            targetAt: START_DELAY_MS + index * NOTE_INTERVAL_MS + TRAVEL_MS,
+            state: 'waiting',
+            judgedAt: 0,
+            element: null
+          });
+        }
+      };
+      const renderSequence = () => {
+        lanes.forEach((lane) => lane.querySelectorAll('.note').forEach((note) => note.remove()));
+        notes.forEach((note, index) => {
+          const element = document.createElement('div');
+          element.className = 'note';
+          element.textContent = String(note.lane + 1);
+          element.dataset.note = index;
+          lanes[note.lane].appendChild(element);
+          note.element = element;
+        });
+      };
+      const updateStatus = () => {
+        statusText.textContent = `HIT ${hits}/${NOTE_COUNT}　MISS ${misses}/${MAX_MISSES}`;
+      };
+      const flashPad = (lane, success) => {
+        const pad = pads[lane];
+        const className = success ? 'flash-good' : 'flash-bad';
+        pad.classList.remove('flash-good', 'flash-bad');
+        void pad.offsetWidth;
+        pad.classList.add(className);
+        window.setTimeout(() => pad.classList.remove(className), 130);
+      };
+      const registerMiss = (note = null, lane = -1) => {
+        if (phase !== 'playing') return;
+        if (note) {
+          note.state = 'missed';
+          note.judgedAt = performance.now() - startedAt;
+          note.element.classList.add('missed');
+          lane = note.lane;
+        }
+        misses++;
+        if (lane >= 0) flashPad(lane, false);
+        updateStatus();
+        instruction.textContent = 'MISS';
+        tone(150, .1, .035);
+        if (misses >= MAX_MISSES) finish(false, `${hits}/${NOTE_COUNT} HIT・MISS ${misses}/${MAX_MISSES}`, 'FAILED');
+      };
+      const pressLane = (lane) => {
+        if (phase !== 'playing') return;
+        const elapsed = performance.now() - startedAt;
+        let best = null;
+        let bestDistance = Infinity;
+        notes.forEach((note) => {
+          if (note.lane !== lane || note.state === 'hit' || note.state === 'missed') return;
+          const distance = Math.abs(elapsed - note.targetAt);
+          if (distance < bestDistance) {
+            best = note;
+            bestDistance = distance;
+          }
+        });
+        if (!best || bestDistance > HIT_WINDOW_MS) {
+          registerMiss(null, lane);
+          return;
+        }
+        best.state = 'hit';
+        best.judgedAt = elapsed;
+        best.element.classList.add('hit');
+        hits++;
+        flashPad(lane, true);
+        updateStatus();
+        instruction.textContent = bestDistance <= 130 ? 'PERFECT' : 'GOOD';
+        tone(bestDistance <= 130 ? 660 : 520, .06, .03);
+        if (notes.every((note) => note.state === 'hit' || note.state === 'missed') && misses < MAX_MISSES) {
+          finish(true, `${hits}/${NOTE_COUNT} HIT・MISS ${misses}/${MAX_MISSES}`);
+        }
+      };
+      const updateGame = (now) => {
+        if (phase !== 'playing') return;
+        const elapsed = now - startedAt;
+        const stageHeight = stage.clientHeight;
+        const targetY = stageHeight * .82;
+        notes.forEach((note) => {
+          if (note.state === 'waiting' && elapsed >= note.spawnAt) note.state = 'active';
+          if (note.state === 'active' && elapsed > note.targetAt + HIT_WINDOW_MS) registerMiss(note);
+          if (note.state === 'active') {
+            const progress = (elapsed - note.spawnAt) / TRAVEL_MS;
+            const y = Math.max(-55, Math.min(stageHeight + 60, progress * targetY));
+            note.element.style.opacity = progress >= 0 && progress <= 1.23 ? '1' : '0';
+            note.element.style.transform = `translate(-50%, ${y}px)`;
+          }
+        });
+        if (phase !== 'playing') return;
+        const remaining = Math.max(0, GAME_DURATION_MS - elapsed);
+        const ratio = remaining / GAME_DURATION_MS;
+        timeText.textContent = (remaining / 1000).toFixed(1);
+        timerFill.style.transform = `scaleX(${ratio})`;
+        timerFill.classList.toggle('danger', ratio <= .22);
+        if (notes.every((note) => note.state === 'hit' || note.state === 'missed')) {
+          finish(true, `${hits}/${NOTE_COUNT} HIT・MISS ${misses}/${MAX_MISSES}`);
+          return;
+        }
+        if (remaining <= 0) {
+          finish(false, `${hits}/${NOTE_COUNT} HIT・MISS ${misses}/${MAX_MISSES}`, 'TIME UP');
+          return;
+        }
+        animationFrame = requestAnimationFrame(updateGame);
+      };
+      const startGame = () => {
+        cancelAnimationFrame(animationFrame);
+        buildSequence();
+        renderSequence();
+        hits = 0;
+        misses = 0;
+        phase = 'playing';
+        startedAt = performance.now();
+        timeText.textContent = (GAME_DURATION_MS / 1000).toFixed(1);
+        timerFill.style.transform = 'scaleX(1)';
+        timerFill.classList.remove('danger');
+        instruction.textContent = 'タップまたはキーボードの1〜4で入力';
+        updateStatus();
+        showScreen(gameScreen);
+        animationFrame = requestAnimationFrame(updateGame);
+      };
+      const finish = (success, detail, title = '') => {
+        if (phase !== 'playing') return;
+        phase = 'result';
+        cancelAnimationFrame(animationFrame);
+        resultScreen.dataset.result = success ? 'success' : 'fail';
+        resultMark.textContent = success ? '✓' : '×';
+        resultTitle.textContent = title || (success ? 'CLEARED' : 'FAILED');
+        resultDetail.textContent = detail;
+        showScreen(resultScreen);
+        if (success) {
+          tone(523, .12, .045);
+          window.setTimeout(() => tone(659, .12, .045), 100);
+          window.setTimeout(() => tone(784, .18, .045), 200);
+        } else tone(180, .18, .045);
+      };
+      const goToTitle = () => {
+        phase = 'idle';
+        cancelAnimationFrame(animationFrame);
+        showScreen(titleScreen);
+      };
+
+      pads.forEach((pad) => pad.addEventListener('pointerdown', (event) => {
+        event.preventDefault();
+        pressLane(Number(pad.dataset.lane));
+      }));
+      document.getElementById('startButton').addEventListener('click', startGame);
+      document.getElementById('retryButton').addEventListener('click', startGame);
+      document.getElementById('titleButton').addEventListener('click', goToTitle);
+      document.getElementById('exitButton').addEventListener('click', goToTitle);
+      themeButton.addEventListener('click', () => setTheme(app.dataset.theme === 'white' ? 'black' : 'white'));
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !gameScreen.classList.contains('hidden')) goToTitle();
+        if ((event.key === 'Enter' || event.key === ' ') && !titleScreen.classList.contains('hidden')) startGame();
+        const keyMap = { '1': 0, '2': 1, '3': 2, '4': 3, d: 0, f: 1, j: 2, k: 3 };
+        if (Object.hasOwn(keyMap, event.key.toLowerCase()) && phase === 'playing') {
+          event.preventDefault();
+          pressLane(keyMap[event.key.toLowerCase()]);
+        }
+      });
+      window.addEventListener('resize', updateViewportHeight);
+      window.visualViewport?.addEventListener('resize', updateViewportHeight);
+      window.addEventListener('pageshow', updateViewportHeight);
+      updateViewportHeight();
+      let storedTheme = 'black';
+      try { storedTheme = localStorage.getItem('ptech-theme') || 'black'; } catch (_) {}
+      setTheme(storedTheme);
+    })();
+  </script>
+</body>
+</html>

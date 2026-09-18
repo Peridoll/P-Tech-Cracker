@@ -42,6 +42,20 @@ GTA FiveMの犯罪ギミックを練習するための、スマートフォン�
 - 4秒の記憶フェーズと10秒の再現フェーズ
 - 正しい10マスをすべて選ぶと成功
 
+### P-Tech: CircuitLink
+
+- 対象: 汎用（`games.json` で変更可能）
+- 8個の接続点をドラッグして配線を整理
+- 交差している配線をリアルタイム表示
+- 30秒以内にすべての交差を解消すると成功
+
+### P-Tech: RapidSequence
+
+- 対象: 汎用（`games.json` で変更可能）
+- 4レーンを流れる20個の信号を追跡
+- 画面タップとキーボード入力に対応
+- ミス3回未満で全信号を処理すると成功
+
 ## Structure
 
 ```text
@@ -52,6 +66,8 @@ games/
   jumping-maze/             JumpingMaze本体と仕様
   card-memory/              CardMemory本体と仕様
   flash-grid/               FlashGrid本体と仕様
+  circuit-link/             CircuitLink本体と仕様
+  rapid-sequence/           RapidSequence本体と仕様
 ```
 
 外部ライブラリとビルド作業は不要です。

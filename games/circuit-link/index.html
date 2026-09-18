@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#080b10" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>P-Tech: CircuitLink</title>
+  <style>
+    :root {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color-scheme: dark;
+      --viewport-height: 100dvh;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      overscroll-behavior: none;
+      background: #05070a;
+    }
+    body {
+      position: fixed;
+      inset: 0;
+      height: var(--viewport-height);
+      display: grid;
+      place-items: center;
+      padding: clamp(0px, 1.8dvh, 14px);
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    button { font: inherit; touch-action: manipulation; }
+
+    #app {
+      --bg: #081017;
+      --panel: #0f1b24;
+      --panel-2: #152a35;
+      --text: #effdff;
+      --muted: #86a3ad;
+      --border: #284451;
+      --primary: #6df0ff;
+      --primary-dark: #158b9d;
+      --danger: #ff526d;
+      width: min(100%, 680px);
+      height: min(820px, 100%);
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: clamp(0px, 3vw, 24px);
+      background:
+        radial-gradient(circle at 50% -12%, rgba(109, 240, 255, .12), transparent 35%),
+        var(--bg);
+      color: var(--text);
+      box-shadow: 0 22px 80px rgba(0, 0, 0, .48);
+    }
+    #app[data-theme="white"] {
+      --bg: #f1f8fa;
+      --panel: #fff;
+      --panel-2: #daeef2;
+      --text: #10262c;
+      --muted: #607b83;
+      --border: #bcd6dc;
+      --primary-dark: #087f90;
+      color-scheme: light;
+    }
+
+    .screen {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      padding:
+        max(clamp(10px, 2.2dvh, 18px), env(safe-area-inset-top))
+        max(clamp(10px, 2vw, 18px), env(safe-area-inset-right))
+        max(clamp(10px, 2.2dvh, 18px), env(safe-area-inset-bottom))
+        max(clamp(10px, 2vw, 18px), env(safe-area-inset-left));
+    }
+    .hidden { display: none !important; }
+    .title-screen, .result-screen {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: clamp(15px, 3.5dvh, 30px);
+    }
+    .eyebrow {
+      margin: 0;
+      color: var(--primary);
+      font-size: clamp(.68rem, 2.4vw, .8rem);
+      font-weight: 950;
+      letter-spacing: .3em;
+    }
+    .brand {
+      margin: 0;
+      font-size: clamp(2.1rem, 9.5vw, 4.4rem);
+      line-height: .87;
+      font-weight: 1000;
+      letter-spacing: -.02em;
+    }
+    .brand span { display: block; color: var(--primary); }
+    .lead {
+      max-width: 34rem;
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(.82rem, 3vw, 1rem);
+      line-height: 1.8;
+    }
+    .theme-btn, .hub-link {
+      position: absolute;
+      top: max(4px, env(safe-area-inset-top));
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 13px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--text);
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: .09em;
+    }
+    .theme-btn { right: max(4px, env(safe-area-inset-right)); cursor: pointer; }
+    .hub-link { left: max(4px, env(safe-area-inset-left)); text-decoration: none; }
+    .primary-btn, .secondary-btn, .exit-btn { border: 0; cursor: pointer; font-weight: 950; }
+    .primary-btn {
+      min-width: 170px;
+      min-height: 54px;
+      padding: 0 34px;
+      border-radius: 14px;
+      background: var(--primary);
+      color: #06242a;
+      letter-spacing: .14em;
+      box-shadow: 0 10px 30px rgba(109, 240, 255, .2);
+    }
+    .secondary-btn {
+      min-height: 48px;
+      padding: 0 28px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--panel);
+      color: var(--text);
+      letter-spacing: .08em;
+    }
+    button:active { transform: translateY(1px) scale(.99); }
+
+    .game-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(7px, 1.35dvh, 12px);
+    }
+    .hud {
+      width: 100%;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+    }
+    .exit-btn {
+      min-height: 38px;
+      padding: 0 13px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: var(--panel);
+      color: var(--text);
+      font-size: .76rem;
+      letter-spacing: .08em;
+    }
+    .game-title {
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      color: var(--primary);
+      font-size: clamp(.8rem, 3vw, 1rem);
+      font-weight: 1000;
+      letter-spacing: .08em;
+    }
+    .status {
+      min-width: 102px;
+      text-align: right;
+      font-size: clamp(.65rem, 2.5vw, .78rem);
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .timer-track {
+      width: 100%;
+      height: clamp(6px, 1.1dvh, 9px);
+      overflow: hidden;
+      border-radius: 999px;
+      background: var(--panel-2);
+    }
+    .timer-fill {
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--primary);
+      transform-origin: left center;
+      transition: transform .08s linear, background .2s ease;
+    }
+    .timer-fill.danger { background: var(--danger); }
+    .phase-row {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .phase {
+      color: var(--muted);
+      font-size: clamp(.7rem, 2.6vw, .84rem);
+      font-weight: 900;
+      letter-spacing: .05em;
+    }
+    .time {
+      min-width: 54px;
+      text-align: right;
+      font-size: clamp(1rem, 3.8vw, 1.25rem);
+      font-weight: 1000;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .board {
+      position: relative;
+      width: min(100%, 560px, calc(var(--viewport-height) - 178px));
+      aspect-ratio: 1;
+      flex: 0 1 auto;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background:
+        linear-gradient(rgba(109, 240, 255, .035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(109, 240, 255, .035) 1px, transparent 1px),
+        color-mix(in srgb, var(--panel) 88%, transparent);
+      background-size: 11.11% 11.11%;
+      touch-action: none;
+    }
+    .wires { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+    .wire {
+      stroke: var(--primary);
+      stroke-width: 8;
+      stroke-linecap: round;
+      opacity: .82;
+      filter: drop-shadow(0 0 5px rgba(109, 240, 255, .2));
+      transition: stroke .12s ease, opacity .12s ease;
+    }
+    .wire.crossing {
+      stroke: var(--danger);
+      opacity: .94;
+      filter: drop-shadow(0 0 6px rgba(255, 82, 109, .32));
+    }
+    .node {
+      position: absolute;
+      z-index: 2;
+      width: clamp(38px, 10vw, 54px);
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 3px solid var(--primary);
+      border-radius: 50%;
+      background: var(--panel-2);
+      color: var(--text);
+      box-shadow: 0 0 0 5px color-mix(in srgb, var(--bg) 76%, transparent), 0 0 18px rgba(109, 240, 255, .2);
+      transform: translate(-50%, -50%);
+      cursor: grab;
+      font-weight: 1000;
+      font-size: clamp(.8rem, 3vw, 1rem);
+      touch-action: none;
+    }
+    .node:active, .node.dragging {
+      cursor: grabbing;
+      transform: translate(-50%, -50%) scale(1.1);
+      background: var(--primary);
+      color: #06242a;
+    }
+    .instruction {
+      min-height: 20px;
+      margin: 0;
+      color: var(--muted);
+      text-align: center;
+      font-size: clamp(.7rem, 2.5vw, .84rem);
+      font-weight: 800;
+    }
+
+    .result-mark {
+      width: clamp(74px, 19vw, 106px);
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border: 3px solid currentColor;
+      border-radius: 50%;
+      color: var(--primary);
+      font-size: clamp(2rem, 9vw, 3.6rem);
+      font-weight: 1000;
+    }
+    .result-screen[data-result="fail"] .result-mark { color: var(--danger); }
+    .result-title {
+      margin: 0;
+      font-size: clamp(2rem, 9vw, 4rem);
+      line-height: 1;
+      font-weight: 1000;
+      letter-spacing: .04em;
+    }
+    .result-detail { margin: 0; color: var(--muted); font-weight: 800; }
+    .result-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+    @media (max-height: 590px) {
+      .screen { padding-top: 7px; padding-bottom: 7px; }
+      .game-screen { gap: 5px; }
+      .phase-row { line-height: 1; }
+      .board { width: min(100%, calc(var(--viewport-height) - 126px), 560px); }
+      .instruction { min-height: 16px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main id="app" data-theme="black">
+    <section id="titleScreen" class="screen title-screen">
+      <a class="hub-link" href="../../" aria-label="ゲーム選択へ戻る">← P-TECH</a>
+      <button id="themeButton" class="theme-btn" type="button" aria-label="テーマを切り替える">WHITE</button>
+      <p class="eyebrow">P-TECH</p>
+      <h1 class="brand">CIRCUIT<span>LINK</span></h1>
+      <p class="lead">接続点を動かして配線を整理。<br />すべての線の交差をなくせば解除成功。</p>
+      <button id="startButton" class="primary-btn" type="button">START</button>
+    </section>
+
+    <section id="gameScreen" class="screen game-screen hidden" aria-label="ゲーム画面">
+      <header class="hud">
+        <button id="exitButton" class="exit-btn" type="button">EXIT</button>
+        <div class="game-title">CIRCUIT LINK</div>
+        <div id="statusText" class="status">CROSS 0</div>
+      </header>
+      <div class="timer-track" aria-hidden="true"><div id="timerFill" class="timer-fill"></div></div>
+      <div class="phase-row">
+        <span class="phase">配線解除フェーズ</span>
+        <span id="timeText" class="time">30.0</span>
+      </div>
+      <div id="board" class="board" aria-label="接続点を移動する配線盤">
+        <svg id="wires" class="wires" viewBox="0 0 1000 1000" aria-hidden="true"></svg>
+      </div>
+      <p id="instruction" class="instruction" aria-live="polite">丸い接続点をドラッグして赤い交差を解消</p>
+    </section>
+
+    <section id="resultScreen" class="screen result-screen hidden" data-result="success">
+      <div id="resultMark" class="result-mark">✓</div>
+      <h2 id="resultTitle" class="result-title">CLEARED</h2>
+      <p id="resultDetail" class="result-detail"></p>
+      <div class="result-actions">
+        <button id="retryButton" class="primary-btn" type="button">RETRY</button>
+        <button id="titleButton" class="secondary-btn" type="button">TITLE</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const NODE_COUNT = 8;
+      const TIME_LIMIT_MS = 30000;
+      const app = document.getElementById('app');
+      const titleScreen = document.getElementById('titleScreen');
+      const gameScreen = document.getElementById('gameScreen');
+      const resultScreen = document.getElementById('resultScreen');
+      const board = document.getElementById('board');
+      const wires = document.getElementById('wires');
+      const timeText = document.getElementById('timeText');
+      const statusText = document.getElementById('statusText');
+      const timerFill = document.getElementById('timerFill');
+      const themeButton = document.getElementById('themeButton');
+      const resultMark = document.getElementById('resultMark');
+      const resultTitle = document.getElementById('resultTitle');
+      const resultDetail = document.getElementById('resultDetail');
+
+      const edges = [
+        [0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 0],
+        [0, 2], [0, 3], [0, 4], [0, 5], [0, 6]
+      ];
+      let nodes = [];
+      let phase = 'idle';
+      let startedAt = 0;
+      let animationFrame = 0;
+      let dragIndex = -1;
+      let dragPointer = null;
+      let crossingCount = 0;
+      let audioContext = null;
+
+      const showScreen = (screen) => {
+        [titleScreen, gameScreen, resultScreen].forEach((item) => item.classList.toggle('hidden', item !== screen));
+      };
+      const updateViewportHeight = () => {
+        const height = window.visualViewport?.height || window.innerHeight;
+        document.documentElement.style.setProperty('--viewport-height', `${height}px`);
+      };
+      const setTheme = (theme) => {
+        const white = theme === 'white';
+        app.dataset.theme = white ? 'white' : 'black';
+        themeButton.textContent = white ? 'BLACK' : 'WHITE';
+        document.querySelector('meta[name="theme-color"]').content = white ? '#f1f8fa' : '#080b10';
+        try { localStorage.setItem('ptech-theme', app.dataset.theme); } catch (_) {}
+      };
+      const tone = (frequency, duration = .06, volume = .035) => {
+        try {
+          audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+          const oscillator = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          oscillator.type = 'sine';
+          oscillator.frequency.value = frequency;
+          gain.gain.setValueAtTime(volume, audioContext.currentTime);
+          gain.gain.exponentialRampToValueAtTime(.0001, audioContext.currentTime + duration);
+          oscillator.connect(gain).connect(audioContext.destination);
+          oscillator.start();
+          oscillator.stop(audioContext.currentTime + duration);
+        } catch (_) {}
+      };
+      const shuffle = (items) => {
+        for (let index = items.length - 1; index > 0; index--) {
+          const swapIndex = Math.floor(Math.random() * (index + 1));
+          [items[index], items[swapIndex]] = [items[swapIndex], items[index]];
+        }
+        return items;
+      };
+      const orientation = (a, b, c) => (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+      const segmentsCross = (a, b, c, d) => {
+        const o1 = orientation(a, b, c);
+        const o2 = orientation(a, b, d);
+        const o3 = orientation(c, d, a);
+        const o4 = orientation(c, d, b);
+        return ((o1 > 0 && o2 < 0) || (o1 < 0 && o2 > 0)) && ((o3 > 0 && o4 < 0) || (o3 < 0 && o4 > 0));
+      };
+      const getCrossings = () => {
+        const crossingEdges = new Set();
+        let count = 0;
+        for (let first = 0; first < edges.length; first++) {
+          for (let second = first + 1; second < edges.length; second++) {
+            const [a, b] = edges[first];
+            const [c, d] = edges[second];
+            if (a === c || a === d || b === c || b === d) continue;
+            if (segmentsCross(nodes[a], nodes[b], nodes[c], nodes[d])) {
+              crossingEdges.add(first);
+              crossingEdges.add(second);
+              count++;
+            }
+          }
+        }
+        return { count, crossingEdges };
+      };
+      const generateNodes = () => {
+        const solved = Array.from({ length: NODE_COUNT }, (_, index) => {
+          const angle = -Math.PI / 2 + index * Math.PI * 2 / NODE_COUNT;
+          return { x: .5 + Math.cos(angle) * .37, y: .5 + Math.sin(angle) * .37 };
+        });
+        let attempts = 0;
+        do {
+          nodes = shuffle(solved.map((point) => ({ ...point })));
+          attempts++;
+        } while (getCrossings().count < 5 && attempts < 100);
+      };
+      const renderBoard = () => {
+        wires.replaceChildren();
+        board.querySelectorAll('.node').forEach((node) => node.remove());
+        edges.forEach(([from, to], index) => {
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.classList.add('wire');
+          line.dataset.edge = index;
+          line.dataset.from = from;
+          line.dataset.to = to;
+          wires.appendChild(line);
+        });
+        nodes.forEach((_, index) => {
+          const node = document.createElement('button');
+          node.type = 'button';
+          node.className = 'node';
+          node.dataset.index = index;
+          node.textContent = String(index + 1);
+          node.setAttribute('aria-label', `接続点${index + 1}`);
+          node.addEventListener('pointerdown', startDrag);
+          board.appendChild(node);
+        });
+        updateBoard();
+      };
+      const updateBoard = () => {
+        board.querySelectorAll('.node').forEach((element) => {
+          const point = nodes[Number(element.dataset.index)];
+          element.style.left = `${point.x * 100}%`;
+          element.style.top = `${point.y * 100}%`;
+        });
+        wires.querySelectorAll('.wire').forEach((line) => {
+          const from = nodes[Number(line.dataset.from)];
+          const to = nodes[Number(line.dataset.to)];
+          line.setAttribute('x1', from.x * 1000);
+          line.setAttribute('y1', from.y * 1000);
+          line.setAttribute('x2', to.x * 1000);
+          line.setAttribute('y2', to.y * 1000);
+        });
+        const result = getCrossings();
+        crossingCount = result.count;
+        wires.querySelectorAll('.wire').forEach((line) => line.classList.toggle('crossing', result.crossingEdges.has(Number(line.dataset.edge))));
+        statusText.textContent = `CROSS ${crossingCount}`;
+      };
+      function startDrag(event) {
+        if (phase !== 'playing') return;
+        event.preventDefault();
+        dragIndex = Number(event.currentTarget.dataset.index);
+        dragPointer = event.pointerId;
+        event.currentTarget.classList.add('dragging');
+        event.currentTarget.setPointerCapture?.(event.pointerId);
+      }
+      const moveDrag = (event) => {
+        if (phase !== 'playing' || dragIndex < 0 || event.pointerId !== dragPointer) return;
+        event.preventDefault();
+        const rect = board.getBoundingClientRect();
+        const margin = Math.min(.09, 30 / Math.min(rect.width, rect.height));
+        nodes[dragIndex].x = Math.max(margin, Math.min(1 - margin, (event.clientX - rect.left) / rect.width));
+        nodes[dragIndex].y = Math.max(margin, Math.min(1 - margin, (event.clientY - rect.top) / rect.height));
+        updateBoard();
+      };
+      const endDrag = (event) => {
+        if (dragIndex < 0 || event.pointerId !== dragPointer) return;
+        board.querySelector(`.node[data-index="${dragIndex}"]`)?.classList.remove('dragging');
+        dragIndex = -1;
+        dragPointer = null;
+        if (phase === 'playing' && crossingCount === 0) finish(true, 'すべての配線交差を解消');
+        else if (phase === 'playing') tone(260 + Math.max(0, 12 - crossingCount) * 18, .05, .025);
+      };
+      const updateTimer = (now) => {
+        if (phase !== 'playing') return;
+        const remaining = Math.max(0, TIME_LIMIT_MS - (now - startedAt));
+        const ratio = remaining / TIME_LIMIT_MS;
+        timeText.textContent = (remaining / 1000).toFixed(1);
+        timerFill.style.transform = `scaleX(${ratio})`;
+        timerFill.classList.toggle('danger', ratio <= .25);
+        if (remaining <= 0) {
+          finish(false, `交差 ${crossingCount}か所`, 'TIME UP');
+          return;
+        }
+        animationFrame = requestAnimationFrame(updateTimer);
+      };
+      const startGame = () => {
+        cancelAnimationFrame(animationFrame);
+        generateNodes();
+        phase = 'playing';
+        dragIndex = -1;
+        dragPointer = null;
+        startedAt = performance.now();
+        timeText.textContent = (TIME_LIMIT_MS / 1000).toFixed(1);
+        timerFill.style.transform = 'scaleX(1)';
+        timerFill.classList.remove('danger');
+        renderBoard();
+        showScreen(gameScreen);
+        animationFrame = requestAnimationFrame(updateTimer);
+      };
+      const finish = (success, detail, title = '') => {
+        if (phase !== 'playing') return;
+        phase = 'result';
+        cancelAnimationFrame(animationFrame);
+        resultScreen.dataset.result = success ? 'success' : 'fail';
+        resultMark.textContent = success ? '✓' : '×';
+        resultTitle.textContent = title || (success ? 'CLEARED' : 'FAILED');
+        resultDetail.textContent = detail;
+        showScreen(resultScreen);
+        if (success) {
+          tone(523, .12, .045);
+          window.setTimeout(() => tone(659, .12, .045), 100);
+          window.setTimeout(() => tone(784, .18, .045), 200);
+        } else tone(180, .18, .045);
+      };
+      const goToTitle = () => {
+        phase = 'idle';
+        cancelAnimationFrame(animationFrame);
+        showScreen(titleScreen);
+      };
+
+      board.addEventListener('pointermove', moveDrag);
+      board.addEventListener('pointerup', endDrag);
+      board.addEventListener('pointercancel', endDrag);
+      document.getElementById('startButton').addEventListener('click', startGame);
+      document.getElementById('retryButton').addEventListener('click', startGame);
+      document.getElementById('titleButton').addEventListener('click', goToTitle);
+      document.getElementById('exitButton').addEventListener('click', goToTitle);
+      themeButton.addEventListener('click', () => setTheme(app.dataset.theme === 'white' ? 'black' : 'white'));
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !gameScreen.classList.contains('hidden')) goToTitle();
+        if ((event.key === 'Enter' || event.key === ' ') && !titleScreen.classList.contains('hidden')) startGame();
+      });
+      window.addEventListener('resize', updateViewportHeight);
+      window.visualViewport?.addEventListener('resize', updateViewportHeight);
+      window.addEventListener('pageshow', updateViewportHeight);
+      updateViewportHeight();
+      let storedTheme = 'black';
+      try { storedTheme = localStorage.getItem('ptech-theme') || 'black'; } catch (_) {}
+      setTheme(storedTheme);
+    })();
+  </script>
+</body>
+</html>
