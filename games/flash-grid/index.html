@@ -262,9 +262,8 @@
     .cell:disabled { cursor: default; }
     .cell.lit {
       border-color: var(--primary);
-      background: var(--primary);
-      box-shadow: 0 0 12px rgba(255, 211, 78, .72), inset 0 0 0 2px rgba(255, 255, 255, .28);
-      animation: pulse .8s ease-in-out infinite alternate;
+      background: color-mix(in srgb, var(--primary) 78%, var(--panel));
+      box-shadow: 0 0 8px rgba(255, 211, 78, .28), inset 0 0 0 1px rgba(255, 255, 255, .16);
     }
     .cell.correct {
       border-color: var(--correct);
@@ -276,10 +275,6 @@
       background: var(--danger);
       box-shadow: 0 0 12px rgba(239, 71, 96, .32);
       animation: wrong .24s ease;
-    }
-    @keyframes pulse {
-      from { filter: brightness(.9); }
-      to { filter: brightness(1.18); }
     }
     @keyframes wrong {
       0%, 100% { transform: translateX(0); }
