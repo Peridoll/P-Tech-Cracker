@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#070b12" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>P-Tech: CipherType</title>
+  <style>
+    :root {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color-scheme: dark;
+      --viewport-height: 100dvh;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      overscroll-behavior: none;
+      background: #05070b;
+    }
+    body {
+      position: fixed;
+      inset: 0;
+      height: var(--viewport-height);
+      display: grid;
+      place-items: center;
+      padding: clamp(0px, 1.8dvh, 14px);
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    button { font: inherit; touch-action: manipulation; }
+
+    #app {
+      --bg: #09111a;
+      --panel: #0f1c28;
+      --panel-2: #172a38;
+      --text: #eefaff;
+      --muted: #83a2af;
+      --border: #254454;
+      --primary: #53e2ff;
+      --primary-dark: #0c7d96;
+      --correct: #66edaa;
+      --danger: #ff5b74;
+      width: min(100%, 680px);
+      height: min(820px, 100%);
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: clamp(0px, 3vw, 24px);
+      background:
+        linear-gradient(rgba(83, 226, 255, .025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(83, 226, 255, .025) 1px, transparent 1px),
+        radial-gradient(circle at 50% -12%, rgba(83, 226, 255, .14), transparent 36%),
+        var(--bg);
+      background-size: 28px 28px, 28px 28px, auto, auto;
+      color: var(--text);
+      box-shadow: 0 22px 80px rgba(0, 0, 0, .5);
+    }
+    #app[data-theme="white"] {
+      --bg: #f3f9fb;
+      --panel: #fff;
+      --panel-2: #dceef3;
+      --text: #10252e;
+      --muted: #58727d;
+      --border: #bddbe4;
+      --primary-dark: #087b95;
+      color-scheme: light;
+    }
+    .screen {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      padding:
+        max(clamp(10px, 2.2dvh, 18px), env(safe-area-inset-top))
+        max(clamp(10px, 2vw, 18px), env(safe-area-inset-right))
+        max(clamp(10px, 2.2dvh, 18px), env(safe-area-inset-bottom))
+        max(clamp(10px, 2vw, 18px), env(safe-area-inset-left));
+    }
+    .hidden { display: none !important; }
+    .title-screen, .result-screen {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(15px, 3.5dvh, 30px);
+      text-align: center;
+    }
+    .eyebrow { margin: 0; color: var(--primary); font-size: clamp(.68rem, 2.4vw, .8rem); font-weight: 950; letter-spacing: .3em; }
+    .brand { margin: 0; font-size: clamp(2rem, 9vw, 4.2rem); line-height: .87; font-weight: 1000; letter-spacing: -.03em; }
+    .brand span { display: block; color: var(--primary); }
+    .lead { max-width: 34rem; margin: 0; color: var(--muted); font-size: clamp(.82rem, 3vw, 1rem); line-height: 1.8; }
+    .theme-btn, .hub-link {
+      position: absolute;
+      top: max(4px, env(safe-area-inset-top));
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 13px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--text);
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: .09em;
+    }
+    .theme-btn { right: max(4px, env(safe-area-inset-right)); cursor: pointer; }
+    .hub-link { left: max(4px, env(safe-area-inset-left)); text-decoration: none; }
+    .primary-btn, .secondary-btn, .exit-btn { border: 0; cursor: pointer; font-weight: 950; }
+    .primary-btn {
+      min-width: 170px;
+      min-height: 54px;
+      padding: 0 34px;
+      border-radius: 14px;
+      background: var(--primary);
+      color: #06232b;
+      letter-spacing: .14em;
+      box-shadow: 0 10px 30px rgba(83, 226, 255, .2);
+    }
+    .secondary-btn { min-height: 48px; padding: 0 28px; border: 1px solid var(--border); border-radius: 14px; background: var(--panel); color: var(--text); letter-spacing: .08em; }
+    button:active { transform: translateY(1px) scale(.99); }
+
+    .game-screen { display: flex; flex-direction: column; align-items: center; gap: clamp(7px, 1.5dvh, 13px); }
+    .hud { width: 100%; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; }
+    .exit-btn { min-height: 38px; padding: 0 13px; border: 1px solid var(--border); border-radius: 11px; background: var(--panel); color: var(--text); font-size: .76rem; letter-spacing: .08em; }
+    .game-title { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--primary); font-size: clamp(.76rem, 2.8vw, 1rem); font-weight: 1000; letter-spacing: .06em; }
+    .status { min-width: 86px; text-align: right; font-size: clamp(.64rem, 2.4vw, .78rem); font-weight: 900; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .timer-track { width: 100%; height: clamp(7px, 1.2dvh, 10px); overflow: hidden; border-radius: 999px; background: var(--panel-2); }
+    .timer-fill { width: 100%; height: 100%; border-radius: inherit; background: var(--primary); transform-origin: left center; transition: transform .05s linear, background .15s ease; }
+    .timer-fill.danger { background: var(--danger); }
+    .time { min-height: 30px; color: var(--text); font-size: clamp(1.15rem, 4vw, 1.5rem); font-weight: 1000; font-variant-numeric: tabular-nums; }
+
+    .terminal {
+      width: min(100%, 590px);
+      flex: 1 1 auto;
+      min-height: 150px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(12px, 3dvh, 24px);
+      padding: clamp(12px, 3vw, 22px);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--panel) 92%, transparent);
+      box-shadow: inset 0 0 34px rgba(83, 226, 255, .035);
+    }
+    .terminal-label { margin: 0; color: var(--muted); font: 800 clamp(.64rem, 2.3vw, .76rem)/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: .16em; }
+    .sequence {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+      gap: clamp(4px, 1vw, 7px);
+    }
+    .character {
+      min-width: 0;
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--border);
+      border-radius: clamp(7px, 1.8vw, 11px);
+      background: var(--bg);
+      color: var(--muted);
+      font: 1000 clamp(.9rem, 4vw, 1.45rem)/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      transition: background .1s ease, color .1s ease, border-color .1s ease, transform .1s ease;
+    }
+    .character.current { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 18%, var(--panel)); color: var(--text); transform: translateY(-2px); box-shadow: 0 0 16px rgba(83, 226, 255, .17); }
+    .character.done { border-color: var(--correct); background: color-mix(in srgb, var(--correct) 20%, var(--panel)); color: var(--correct); }
+    .character.error { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 24%, var(--panel)); color: var(--danger); }
+    .prompt { min-height: 24px; margin: 0; color: var(--muted); text-align: center; font-size: clamp(.7rem, 2.6vw, .86rem); font-weight: 850; }
+
+    .keyboard { width: min(100%, 590px); display: grid; gap: clamp(6px, 1.5vw, 10px); }
+    .key-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: clamp(6px, 1.5vw, 10px); }
+    .key {
+      min-width: 0;
+      min-height: clamp(48px, 8dvh, 70px);
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel-2);
+      color: var(--text);
+      cursor: pointer;
+      font: 1000 clamp(1rem, 4.5vw, 1.45rem)/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      box-shadow: inset 0 -4px 0 rgba(0, 0, 0, .16);
+    }
+    .key.active { background: var(--primary); color: #06232b; border-color: var(--primary); }
+    .key.bad { background: var(--danger); color: #fff; border-color: var(--danger); }
+
+    .result-mark { width: clamp(74px, 19vw, 106px); aspect-ratio: 1; display: grid; place-items: center; border: 3px solid currentColor; border-radius: 50%; color: var(--correct); font-size: clamp(2rem, 9vw, 3.6rem); font-weight: 1000; }
+    .result-screen[data-result="fail"] .result-mark { color: var(--danger); }
+    .result-title { margin: 0; font-size: clamp(2rem, 9vw, 4rem); line-height: 1; font-weight: 1000; letter-spacing: .04em; }
+    .result-detail { margin: 0; color: var(--muted); font-weight: 800; }
+    .result-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+    @media (max-height: 590px) {
+      .screen { padding-top: 7px; padding-bottom: 7px; }
+      .game-screen { gap: 4px; }
+      .terminal { min-height: 112px; gap: 8px; padding: 8px 12px; }
+      .key { min-height: 39px; }
+      .time { min-height: 22px; font-size: 1rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main id="app" data-theme="black">
+    <section id="titleScreen" class="screen title-screen">
+      <a class="hub-link" href="../../" aria-label="ゲーム選択へ戻る">← P-TECH</a>
+      <button id="themeButton" class="theme-btn" type="button" aria-label="テーマを切り替える">WHITE</button>
+      <p class="eyebrow">P-TECH</p>
+      <h1 class="brand">CIPHER<span>TYPE</span></h1>
+      <p class="lead">表示された15文字のコードを追跡。<br />7秒以内に左から正確に入力せよ。</p>
+      <button id="startButton" class="primary-btn" type="button">START</button>
+    </section>
+
+    <section id="gameScreen" class="screen game-screen hidden" aria-label="ゲーム画面">
+      <header class="hud">
+        <button id="exitButton" class="exit-btn" type="button">EXIT</button>
+        <div class="game-title">CIPHER TYPE</div>
+        <div id="statusText" class="status">INPUT 0/15</div>
+      </header>
+      <div class="timer-track" aria-hidden="true"><div id="timerFill" class="timer-fill"></div></div>
+      <div id="timeText" class="time">7.0</div>
+      <div class="terminal">
+        <p class="terminal-label">DECRYPTION SEQUENCE</p>
+        <div id="sequence" class="sequence" aria-label="入力する文字列"></div>
+        <p id="prompt" class="prompt" aria-live="polite">左から順番に入力</p>
+      </div>
+      <div class="keyboard" aria-label="文字入力パッド">
+        <div class="key-row">
+          <button class="key" type="button" data-key="Q">Q</button>
+          <button class="key" type="button" data-key="W">W</button>
+          <button class="key" type="button" data-key="E">E</button>
+          <button class="key" type="button" data-key="R">R</button>
+        </div>
+        <div class="key-row">
+          <button class="key" type="button" data-key="A">A</button>
+          <button class="key" type="button" data-key="S">S</button>
+          <button class="key" type="button" data-key="D">D</button>
+          <button class="key" type="button" data-key="F">F</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="resultScreen" class="screen result-screen hidden" data-result="success">
+      <div id="resultMark" class="result-mark">✓</div>
+      <h2 id="resultTitle" class="result-title">CLEARED</h2>
+      <p id="resultDetail" class="result-detail"></p>
+      <div class="result-actions">
+        <button id="retryButton" class="primary-btn" type="button">RETRY</button>
+        <button id="titleButton" class="secondary-btn" type="button">TITLE</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const KEYS = ['Q', 'W', 'E', 'R', 'A', 'S', 'D', 'F'];
+      const CODE_LENGTH = 15;
+      const TIME_LIMIT_MS = 7000;
+      const app = document.getElementById('app');
+      const titleScreen = document.getElementById('titleScreen');
+      const gameScreen = document.getElementById('gameScreen');
+      const resultScreen = document.getElementById('resultScreen');
+      const sequenceElement = document.getElementById('sequence');
+      const statusText = document.getElementById('statusText');
+      const timeText = document.getElementById('timeText');
+      const timerFill = document.getElementById('timerFill');
+      const prompt = document.getElementById('prompt');
+      const themeButton = document.getElementById('themeButton');
+      const resultMark = document.getElementById('resultMark');
+      const resultTitle = document.getElementById('resultTitle');
+      const resultDetail = document.getElementById('resultDetail');
+      const keyButtons = [...document.querySelectorAll('.key')];
+
+      let code = [];
+      let cursor = 0;
+      let phase = 'idle';
+      let startedAt = 0;
+      let animationFrame = 0;
+      let audioContext = null;
+
+      const showScreen = (screen) => {
+        [titleScreen, gameScreen, resultScreen].forEach((item) => item.classList.toggle('hidden', item !== screen));
+      };
+      const updateViewportHeight = () => {
+        const height = window.visualViewport?.height || window.innerHeight;
+        document.documentElement.style.setProperty('--viewport-height', `${height}px`);
+      };
+      const setTheme = (theme) => {
+        const white = theme === 'white';
+        app.dataset.theme = white ? 'white' : 'black';
+        themeButton.textContent = white ? 'BLACK' : 'WHITE';
+        document.querySelector('meta[name="theme-color"]').content = white ? '#f3f9fb' : '#070b12';
+        try { localStorage.setItem('ptech-theme', app.dataset.theme); } catch (_) {}
+      };
+      const tone = (frequency, duration = .055, volume = .03) => {
+        try {
+          audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+          const oscillator = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          oscillator.type = 'square';
+          oscillator.frequency.value = frequency;
+          gain.gain.setValueAtTime(volume, audioContext.currentTime);
+          gain.gain.exponentialRampToValueAtTime(.0001, audioContext.currentTime + duration);
+          oscillator.connect(gain).connect(audioContext.destination);
+          oscillator.start();
+          oscillator.stop(audioContext.currentTime + duration);
+        } catch (_) {}
+      };
+      const makeCode = () => {
+        code = [];
+        for (let index = 0; index < CODE_LENGTH; index++) {
+          let next = KEYS[Math.floor(Math.random() * KEYS.length)];
+          while (index > 0 && next === code[index - 1]) next = KEYS[Math.floor(Math.random() * KEYS.length)];
+          code.push(next);
+        }
+      };
+      const renderCode = () => {
+        sequenceElement.replaceChildren(...code.map((character, index) => {
+          const cell = document.createElement('span');
+          cell.className = `character${index === 0 ? ' current' : ''}`;
+          cell.textContent = character;
+          cell.dataset.index = index;
+          return cell;
+        }));
+      };
+      const updateCells = (error = false) => {
+        [...sequenceElement.children].forEach((cell, index) => {
+          cell.classList.toggle('done', index < cursor);
+          cell.classList.toggle('current', index === cursor && !error);
+          cell.classList.toggle('error', index === cursor && error);
+        });
+      };
+      const flashKey = (key, success) => {
+        const button = keyButtons.find((item) => item.dataset.key === key);
+        if (!button) return;
+        const className = success ? 'active' : 'bad';
+        button.classList.remove('active', 'bad');
+        void button.offsetWidth;
+        button.classList.add(className);
+        window.setTimeout(() => button.classList.remove(className), 120);
+      };
+      const updateStatus = () => { statusText.textContent = `INPUT ${cursor}/${CODE_LENGTH}`; };
+      const finish = (success, detail, title = '') => {
+        if (phase !== 'playing') return;
+        phase = 'result';
+        cancelAnimationFrame(animationFrame);
+        resultScreen.dataset.result = success ? 'success' : 'fail';
+        resultMark.textContent = success ? '✓' : '×';
+        resultTitle.textContent = title || (success ? 'CLEARED' : 'FAILED');
+        resultDetail.textContent = detail;
+        window.setTimeout(() => showScreen(resultScreen), success ? 110 : 260);
+        if (success) {
+          tone(523, .12, .04);
+          window.setTimeout(() => tone(659, .12, .04), 95);
+          window.setTimeout(() => tone(784, .16, .04), 190);
+        } else tone(155, .16, .04);
+      };
+      const enterKey = (rawKey) => {
+        if (phase !== 'playing') return;
+        const key = rawKey.toUpperCase();
+        if (!KEYS.includes(key)) return;
+        if (key !== code[cursor]) {
+          flashKey(key, false);
+          updateCells(true);
+          prompt.textContent = `ERROR — ${code[cursor]} が必要`; 
+          finish(false, `${cursor}/${CODE_LENGTH} INPUT`, 'INPUT ERROR');
+          return;
+        }
+        flashKey(key, true);
+        cursor++;
+        updateStatus();
+        updateCells();
+        prompt.textContent = cursor === CODE_LENGTH ? 'SEQUENCE COMPLETE' : 'ACCESSING...';
+        tone(430 + cursor * 18);
+        if (cursor === CODE_LENGTH) {
+          const elapsed = (performance.now() - startedAt) / 1000;
+          finish(true, `${elapsed.toFixed(2)} SEC・${CODE_LENGTH}/${CODE_LENGTH} INPUT`);
+        }
+      };
+      const tick = (now) => {
+        if (phase !== 'playing') return;
+        const remaining = Math.max(0, TIME_LIMIT_MS - (now - startedAt));
+        const ratio = remaining / TIME_LIMIT_MS;
+        timeText.textContent = (remaining / 1000).toFixed(1);
+        timerFill.style.transform = `scaleX(${ratio})`;
+        timerFill.classList.toggle('danger', ratio <= .28);
+        if (remaining <= 0) {
+          finish(false, `${cursor}/${CODE_LENGTH} INPUT`, 'TIME UP');
+          return;
+        }
+        animationFrame = requestAnimationFrame(tick);
+      };
+      const startGame = () => {
+        cancelAnimationFrame(animationFrame);
+        makeCode();
+        renderCode();
+        cursor = 0;
+        phase = 'playing';
+        startedAt = performance.now();
+        updateStatus();
+        timeText.textContent = (TIME_LIMIT_MS / 1000).toFixed(1);
+        timerFill.style.transform = 'scaleX(1)';
+        timerFill.classList.remove('danger');
+        prompt.textContent = '左から順番に入力';
+        showScreen(gameScreen);
+        animationFrame = requestAnimationFrame(tick);
+      };
+      const goToTitle = () => {
+        phase = 'idle';
+        cancelAnimationFrame(animationFrame);
+        showScreen(titleScreen);
+      };
+
+      keyButtons.forEach((button) => button.addEventListener('pointerdown', (event) => {
+        event.preventDefault();
+        enterKey(button.dataset.key);
+      }));
+      document.getElementById('startButton').addEventListener('click', startGame);
+      document.getElementById('retryButton').addEventListener('click', startGame);
+      document.getElementById('titleButton').addEventListener('click', goToTitle);
+      document.getElementById('exitButton').addEventListener('click', goToTitle);
+      themeButton.addEventListener('click', () => setTheme(app.dataset.theme === 'white' ? 'black' : 'white'));
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !gameScreen.classList.contains('hidden')) goToTitle();
+        if ((event.key === 'Enter' || event.key === ' ') && !titleScreen.classList.contains('hidden')) startGame();
+        if (!event.repeat && KEYS.includes(event.key.toUpperCase()) && phase === 'playing') {
+          event.preventDefault();
+          enterKey(event.key);
+        }
+      });
+      window.addEventListener('resize', updateViewportHeight);
+      window.visualViewport?.addEventListener('resize', updateViewportHeight);
+      window.addEventListener('pageshow', updateViewportHeight);
+      updateViewportHeight();
+      let storedTheme = 'black';
+      try { storedTheme = localStorage.getItem('ptech-theme') || 'black'; } catch (_) {}
+      setTheme(storedTheme);
+    })();
+  </script>
+</body>
+</html>

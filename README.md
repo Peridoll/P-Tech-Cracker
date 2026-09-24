@@ -63,6 +63,13 @@ GTA FiveMの犯罪ギミックを練習するための、スマートフォン�
 - 成功するたびに判定幅が狭まり、速度と方向が変化
 - 30秒以内に8段階を解除すると成功
 
+### P-Tech: CipherType
+
+- 対象: 汎用（`games.json` で変更可能）
+- QWER / ASDFから生成される15文字を左から入力
+- PCキーボードとスマートフォン用画面パッドに対応
+- 7秒以内にミスなく全文字を入力すると成功
+
 ## Structure
 
 ```text
@@ -76,6 +83,7 @@ games/
   circuit-link/             CircuitLink本体と仕様
   rapid-sequence/           RapidSequence本体と仕様
   pulse-dial/               PulseDial本体と仕様
+  cipher-type/              CipherType本体と仕様
 ```
 
 外部ライブラリとビルド作業は不要です。
