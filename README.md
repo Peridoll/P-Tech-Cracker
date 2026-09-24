@@ -70,6 +70,13 @@ GTA FiveMの犯罪ギミックを練習するための、スマートフォン�
 - PCキーボードとスマートフォン用画面パッドに対応
 - 7秒以内にミスなく全文字を入力すると成功
 
+### P-Tech: HexTrace
+
+- 対象: 汎用（`games.json` で変更可能）
+- 5列 × 6行に並ぶ30個の16進コードを探索
+- 上部に表示される6コードを順番どおり選択
+- 30秒以内、ミス3回未満で全コードを追跡すると成功
+
 ## Structure
 
 ```text
@@ -84,6 +91,7 @@ games/
   rapid-sequence/           RapidSequence本体と仕様
   pulse-dial/               PulseDial本体と仕様
   cipher-type/              CipherType本体と仕様
+  hex-trace/                HexTrace本体と仕様
 ```
 
 外部ライブラリとビルド作業は不要です。

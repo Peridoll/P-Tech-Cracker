@@ -89,6 +89,16 @@
       "status": "PLAYABLE",
       "color": "#53e2ff",
       "enabled": true
+    },
+    {
+      "id": "hex-trace",
+      "title": "HEX TRACE",
+      "label": "MULTI-USE",
+      "description": "30個の16進コードから6個のターゲットを順番に探す探索ギミック",
+      "href": "games/hex-trace/?v=20260924-1",
+      "status": "PLAYABLE",
+      "color": "#49f2a7",
+      "enabled": true
     }
   ]
 }
