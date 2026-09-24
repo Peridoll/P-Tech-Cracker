@@ -64,8 +64,8 @@
       "id": "rapid-sequence",
       "title": "RAPID SEQUENCE",
       "label": "MULTI-USE",
-      "description": "4レーンを流れる信号に合わせて入力する反射ギミック",
-      "href": "games/rapid-sequence/?v=20260918-1",
+      "description": "3レーンを落ちてくるノーツをA・S・Dで叩くリズムギミック",
+      "href": "games/rapid-sequence/?v=20260924-1",
       "status": "PLAYABLE",
       "color": "#ff62d0",
       "enabled": true
